@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapNexus - โปรไฟล์ & เลเวลนักเที่ยว</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/elegant-theme.css">
+    <link rel="stylesheet" href="css/smart-city-nexus.css">
+    <style>
+        .profile-container { margin-top: 120px; display: flex; justify-content: center; width: 100%; padding-bottom: 50px;}
+        .profile-card { max-width: 600px; width: 90%; text-align: center; border-top: 4px solid var(--secondary-color); }
+        .avatar { width: 130px; height: 130px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 10px 25px rgba(26,54,93,0.15); margin: -4rem auto 1.5rem auto; display: flex; align-items: center; justify-content: center; font-size: 4.5rem; background: var(--primary-color); color: #fff; }
+        .level-badge { display: inline-block; background: var(--secondary-color); color: #fff; padding: 6px 20px; border-radius: 30px; font-weight: 500; margin-bottom: 1.5rem; box-shadow: 0 4px 15px rgba(183,121,31,0.2); }
+        .xp-bar-container { background: #e2e8f0; height: 24px; border-radius: 12px; overflow: hidden; margin: 1.5rem 0; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); width: 65%; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .xp-text { position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-size: 0.9rem; font-weight: 600; line-height: 24px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+        .checkin-list { text-align: left; margin-top: 3rem; }
+        .checkin-item { padding: 1.2rem; background: #fff; border-left: 4px solid var(--success-color); margin-bottom: 1rem; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .checkin-item:hover { transform: translateX(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.06); }
+    </style>
+</head>
+<body class="elegant-theme smart-city-theme">
+    <div class="elegant-pattern"></div>
+
+    <nav class="glass-navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo-container" style="text-decoration: none;">
+                    <img src="assets/images/logo.png" alt="MapNexus" style="height: 40px; width: auto; object-fit: contain;">
+                    <span class="text-primary" style="font-weight: 700; font-size: 1.3rem; letter-spacing: -0.5px; font-family: var(--font-display);">Map<span class="text-secondary" style="font-weight: 400;">Nexus</span></span>
+                </a>
+            </div>
+            
+            <div class="nav-center">
+                <ul class="nav-links">
+                    <li><a href="index.html"><i class="fa-solid fa-house"></i> หน้าหลัก</a></li>
+                    <li><a href="programs.html"><i class="fa-solid fa-gem"></i> พรีเมียม</a></li>
+                    <li><a href="map.html"><i class="fa-solid fa-map"></i> แผนที่ & AI</a></li>
+                    <li><a href="index.html#city-monitoring"><i class="fa-solid fa-users-viewfinder"></i> ติดตามกิจกรรม</a></li>
+                    <li><a href="profile.html" class="active"><i class="fa-solid fa-user"></i> เลเวล</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-right">
+                <div class="interaction-pill">
+                    <div id="pm25-widget" class="pm-pill loading">
+                        <i class="fa-solid fa-wind"></i>
+                        <span class="pm-value">--</span>
+                        <span class="pm-unit">AQI</span>
+                    </div>
+                    
+                    <div style="width: 1px; height: 20px; background: rgba(0,0,0,0.06);"></div>
+
+                    <div id="user-menu-container" style="display: flex; align-items: center; gap: 8px;">
+                        <a href="login.html" class="elegant-btn sm primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 50px;">เข้าสู่ระบบ</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <div class="profile-card glass-panel hover-lift">
+            <div class="avatar"><i class="fa-solid fa-user-tie"></i></div>
+            <h2 style="font-size: 2.2rem; margin-bottom: 0.5rem; color: var(--text-main);" class="username-display">นักสำรวจ MapNexus</h2>
+            <div id="premium-badge-container" style="margin-bottom: 1rem;"></div>
+            <div class="level-badge" id="user-level"><i class="fa-solid fa-medal"></i> เลเวล 5 - นักสำรวจมือใหม่</div>
+            
+            <div class="xp-bar-container" style="background: #EBF5FF;">
+                <div class="xp-bar-fill" id="xp-fill" style="background: linear-gradient(90deg, var(--primary-color), var(--accent-color));"></div>
+                <div class="xp-text" id="xp-text" style="color: var(--primary-color); font-weight: 600;">650 / 1000 XP</div>
+            </div>
+            
+            <p style="color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.6;">สะสมค่าประสบการณ์จากการเช็คอินและร่วมกิจกรรมเมือง<br>เพื่อเลื่อนระดับและรับสิทธิพิเศษสำหรับพลเมืองคุณภาพ</p>
+
+            <button class="elegant-btn primary" onclick="simulateCheckin()"><i class="fa-solid fa-qrcode"></i> สแกน Check-in เพิ่มประสบการณ์</button>
+
+            <div class="checkin-list">
+                <h3 class="text-primary" style="margin-bottom: 1.5rem; font-size: 1.2rem;"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการเดินทางล่าสุด</h3>
+                <div id="history-container">
+                    <div class="checkin-item">
+                        <div>
+                            <h4 style="color: var(--text-main); margin-bottom:4px;">ลานพญาศรีสัตตนาคราช</h4>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;"><i class="fa-regular fa-calendar"></i> วันนี้ 10:30 น.</p>
+                        </div>
+                        <span style="color: var(--success-color); font-weight: 600; font-size: 1.1rem;">+50 XP</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/pm25.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

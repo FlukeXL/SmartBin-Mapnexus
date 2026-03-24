@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Bin Simulator — ทดสอบระบบ GPS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .main-wrapper {
+            display: grid;
+            grid-template-columns: 500px 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            width: 100%;
+        }
+        @media (max-width: 1024px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+        .info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .info-row:last-child { margin-bottom: 0; }
+        .label { color: #64748b; }
+        .value { font-weight: 600; color: #1e293b; }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            margin-top: 0.5rem;
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        .status {
+            padding: 0.75rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .status.show { display: block; }
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .range-container input[type="range"] {
+            flex: 1;
+        }
+        .range-value {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.2rem;
+            min-width: 50px;
+            text-align: right;
+        }
+        .map-container {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        .map-header {
+            margin-bottom: 1rem;
+        }
+        .map-header h2 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .map-header p {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+        #map {
+            flex: 1;
+            min-height: 500px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <!-- Left: Form -->
+        <div class="container">
+        <h1>
+            <i class="fa-solid fa-trash-can"></i>
+            Smart Bin Simulator
+        </h1>
+        <p class="subtitle">จำลองการส่งข้อมูล GPS จาก Smart Bin ไปยัง Server</p>
+
+        <div class="info-box">
+            <div class="info-row">
+                <span class="label">📍 ตำแหน่งปัจจุบัน:</span>
+                <span class="value" id="current-location">กำลังดึง...</span>
+            </div>
+            <div class="info-row">
+                <span class="label">🛰️ ความแม่นยำ:</span>
+                <span class="value" id="accuracy">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">🌐 Server:</span>
+                <span class="value" id="server-url">-</span>
+            </div>
+        </div>
+
+        <form id="bin-form">
+            <div class="form-group">
+                <label for="bin-id">🆔 Bin ID</label>
+                <input type="number" id="bin-id" value="1" min="1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="bin-name">📝 ชื่อถัง</label>
+                <input type="text" id="bin-name" value="Smart Bin ทดสอบ" required>
+            </div>
+
+            <div class="form-group">
+                <label for="location-name">📌 ชื่อสถานที่</label>
+                <input type="text" id="location-name" value="ตำแหน่งทดสอบ" required>
+            </div>
+
+            <div class="form-group">
+                <label for="fill-level">🗑️ ปริมาณขยะ: <span class="range-value" id="fill-display">50%</span></label>
+                <div class="range-container">
+                    <input type="range" id="fill-level" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="status">🚦 สถานะ</label>
+                <select id="status">
+                    <option value="empty">ว่าง (Empty)</option>
+                    <option value="normal" selected>ปกติ (Normal)</option>
+                    <option value="almost_full">ใกล้เต็ม (Almost Full)</option>
+                    <option value="full">เต็ม (Full)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="send-btn">
+                <i class="fa-solid fa-paper-plane"></i>
+                ส่งข้อมูลไปยัง Server
+            </button>
+
+            <button type="button" class="btn btn-secondary" onclick="location.reload()">
+                <i class="fa-solid fa-rotate"></i>
+                รีเฟรช GPS
+            </button>
+
+            <button type="button" class="btn btn-secondary" onclick="loadDemoData()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; margin-top: 0.5rem;">
+                <i class="fa-solid fa-flask"></i>
+                โหลดข้อมูล Demo (6 ถัง)
+            </button>
+        </form>
+
+        <div class="status" id="status-msg"></div>
+    </div>
+
+    <!-- Right: Map -->
+    <div class="map-container">
+        <div class="map-header">
+            <h2>
+                <i class="fa-solid fa-map-location-dot"></i>
+                แผนที่ตำแหน่งถังขยะ
+            </h2>
+            <p>🔵 = ตำแหน่งปัจจุบันของคุณ | 🗑️ = Smart Bin ที่ส่งไปแล้ว</p>
+        </div>
+        <div id="map"></div>
+    </div>
+</div>
+
+    <script>
+        let currentLat = null;
+        let currentLng = null;
+        let map = null;
+        let userMarker = null;
+        let binMarkers = [];
+
+        // สร้างแผนที่
+        function initMap() {
+            map = L.map('map').setView([17.4085, 104.7760], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+        }
+
+        // อัปเดต marker ตำแหน่งปัจจุบัน
+        function updateUserMarker(lat, lng) {
+            if (userMarker) map.removeLayer(userMarker);
+            
+            userMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    html: '<div style="width:20px;height:20px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 10px rgba(59,130,246,0.5);"></div>',
+                    className: '',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                })
+            }).addTo(map).bindPopup('📍 ตำแหน่งปัจจุบันของคุณ').openPopup();
+            
+            map.setView([lat, lng], 16);
+        }
+
+        // เพิ่ม marker Smart Bin
+        function addBinMarker(data) {
+            const fillColor = data.fill_level >= 90 ? '#ef4444' : 
+                             data.fill_level >= 70 ? '#f59e0b' : '#10b981';
+            
+            const marker = L.marker([data.lat, data.lng], {
+                icon: L.divIcon({
+                    html: `<div style="font-size:1.8rem;color:${fillColor};filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">🗑️</div>`,
+                    className: '',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30]
+                })
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <b>🗑️ ${data.bin_name}</b><br>
+                Bin ID: ${data.bin_id}<br>
+                ปริมาณ: <b style="color:${fillColor};">${data.fill_level}%</b><br>
+                สถานะ: ${data.status}<br>
+                📌 ${data.location_name}
+            `);
+            
+            binMarkers.push(marker);
+        }
+
+        // เริ่มต้น
+        initMap();
+
+        // ข้อมูล Demo — พิกัดจริงในนครพนม
+        const DEMO_BINS = [
+            { bin_id: 101, bin_name: 'ถังหน้าลานพญานาค', lat: 17.4101, lng: 104.7790, fill_level: 85, status: 'almost_full', location_name: 'ลานพญาศรีสัตตนาคราช' },
+            { bin_id: 102, bin_name: 'ถังตลาดอินโดจีน', lat: 17.4065, lng: 104.7782, fill_level: 95, status: 'full', location_name: 'ตลาดอินโดจีน' },
+            { bin_id: 103, bin_name: 'ถังหน้าเทศบาล', lat: 17.3995, lng: 104.7765, fill_level: 30, status: 'normal', location_name: 'ศาลากลางจังหวัด' },
+            { bin_id: 104, bin_name: 'ถังวัดโอกาส', lat: 17.4050, lng: 104.7770, fill_level: 60, status: 'normal', location_name: 'วัดโอกาส (ศรีบัวบาน)' },
+            { bin_id: 105, bin_name: 'ถังหอนาฬิกา', lat: 17.4069, lng: 104.7743, fill_level: 15, status: 'normal', location_name: 'หอนาฬิกาเวียดนามอนุสรณ์' },
+            { bin_id: 106, bin_name: 'ถังริมโขง', lat: 17.4120, lng: 104.7785, fill_level: 72, status: 'almost_full', location_name: 'ถนนสุนทรวิจิตร' }
+        ];
+
+        // โหลดข้อมูล Demo
+        async function loadDemoData() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> กำลังโหลด...';
+
+            let success = 0;
+            let failed = 0;
+
+            for (const bin of DEMO_BINS) {
+                try {
+                    const res = await fetch('/api/gps/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bin)
+                    });
+
+                    if (res.ok) {
+                        success++;
+                        addBinMarker(bin);
+                        await new Promise(r => setTimeout(r, 200)); // delay เล็กน้อยเพื่อให้เห็นการโหลด
+                    } else {
+                        failed++;
+                    }
+                } catch (err) {
+                    failed++;
+                }
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-flask"></i> โหลดข้อมูล Demo (6 ถัง)';
+
+            if (success > 0) {
+                showStatus('success', `✅ โหลดสำเร็จ ${success} ถัง${failed > 0 ? ` (ล้มเหลว ${failed} ถัง)` : ''}<br>ไปดูที่ <a href="admin-dashboard.html?section=waste-bins" style="color:#166534;font-weight:700;">Admin Dashboard</a> หรือ <a href="map.html" style="color:#166534;font-weight:700;">Map</a>`);
+                
+                // zoom ให้เห็นทุกถัง
+                if (binMarkers.length > 0) {
+                    const group = L.featureGroup(binMarkers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+            } else {
+                showStatus('error', `❌ ไม่สามารถโหลดข้อมูล Demo ได้`);
+            }
+        }
+
+        // ดึงตำแหน่ง GPS ทันทีที่โหลดหน้า
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                currentLat = pos.coords.latitude;
+                currentLng = pos.coords.longitude;
+                
+                document.getElementById('current-location').textContent = 
+                    `${currentLat.toFixed(6)}, ${currentLng.toFixed(6)}`;
+                document.getElementById('accuracy').textContent = 
+                    `±${Math.round(pos.coords.accuracy)} เมตร`;
+                document.getElementById('server-url').textContent = 
+                    `${location.protocol}//${location.host}`;
+                
+                // อัปเดตแผนที่
+                updateUserMarker(currentLat, currentLng);
+            },
+            (err) => {
+                document.getElementById('current-location').textContent = 'ไม่สามารถดึงได้';
+                document.getElementById('accuracy').textContent = err.message;
+                showStatus('error', '❌ กรุณาอนุญาต Location ในเบราว์เซอร์');
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+
+        // อัปเดตค่า fill level แบบ realtime
+        document.getElementById('fill-level').addEventListener('input', (e) => {
+            const val = e.target.value;
+            document.getElementById('fill-display').textContent = `${val}%`;
+            
+            // เปลี่ยนสถานะอัตโนมัติตาม fill level
+            const statusSelect = document.getElementById('status');
+            if (val >= 90) statusSelect.value = 'full';
+            else if (val >= 70) statusSelect.value = 'almost_full';
+            else if (val > 0) statusSelect.value = 'normal';
+            else statusSelect.value = 'empty';
+        });
+
+        // ส่งข้อมูล
+        document.getElementById('bin-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!currentLat || !currentLng) {
+                showStatus('error', '❌ ยังไม่ได้รับตำแหน่ง GPS กรุณารอสักครู่');
+                return;
+            }
+
+            const btn = document.getElementById('send-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> กำลังส่ง...';
+
+            const payload = {
+                bin_id: parseInt(document.getElementById('bin-id').value),
+                bin_name: document.getElementById('bin-name').value,
+                lat: currentLat,
+                lng: currentLng,
+                fill_level: parseInt(document.getElementById('fill-level').value),
+                status: document.getElementById('status').value,
+                location_name: document.getElementById('location-name').value
+            };
+
+            try {
+                const res = await fetch('/api/gps/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showStatus('success', `✅ ส่งสำเร็จ! Bin ID: ${payload.bin_id}<br>พิกัด: ${currentLat.toFixed(6)}, ${currentLng.toFixed(6)}<br>ไปดูที่ <a href="admin-dashboard.html?section=waste-bins" style="color:#166534;font-weight:700;">Admin Dashboard</a> หรือ <a href="map.html" style="color:#166534;font-weight:700;">Map</a>`);
+                    
+                    // เพิ่ม marker บนแผนที่
+                    addBinMarker(payload);
+                } else {
+                    showStatus('error', `❌ เกิดข้อผิดพลาด: ${data.error || data.message}`);
+                }
+            } catch (err) {
+                showStatus('error', `❌ ไม่สามารถเชื่อมต่อ Server: ${err.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลไปยัง Server';
+            }
+        });
+
+        function showStatus(type, message) {
+            const statusEl = document.getElementById('status-msg');
+            statusEl.className = `status ${type} show`;
+            statusEl.innerHTML = message;
+        }
+    </script>
+</body>
+</html>

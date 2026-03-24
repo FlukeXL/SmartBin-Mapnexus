@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapNexus - แผนที่พรีเมียม & AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet Setup via cdnjs (Stable in Thailand) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    
+    <!-- Leaflet Routing Machine via cdnjs -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/elegant-theme.css">
+    <link rel="stylesheet" href="css/smart-city-nexus.css">
+    <link rel="stylesheet" href="css/map.css">
+</head>
+<body class="elegant-theme smart-city-theme">
+    <div class="bg-logo-watermark"></div>
+    <div class="elegant-pattern"></div>
+
+    <nav class="glass-navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo-container" style="text-decoration: none;">
+                    <img src="assets/images/logo.png" alt="MapNexus" style="height: 40px; width: auto; object-fit: contain;">
+                    <span class="text-primary" style="font-weight: 700; font-size: 1.3rem; letter-spacing: -0.5px; font-family: var(--font-display);">Map<span class="text-secondary" style="font-weight: 400;">Nexus</span></span>
+                </a>
+            </div>
+            
+            <div class="nav-center">
+                <ul class="nav-links">
+                    <li><a href="index.html"><i class="fa-solid fa-house"></i> หน้าหลัก</a></li>
+                    <li><a href="programs.html"><i class="fa-solid fa-gem"></i> พรีเมียม</a></li>
+                    <li><a href="map.html" class="active"><i class="fa-solid fa-map"></i> แผนที่ & AI</a></li>
+                    <li><a href="index.html#city-monitoring"><i class="fa-solid fa-users-viewfinder"></i> ติดตามกิจกรรม</a></li>
+                    <li><a href="profile.html"><i class="fa-solid fa-user"></i> เลเวล</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-right">
+                <div class="interaction-pill">
+                    <div id="pm25-widget" class="pm-pill loading">
+                        <i class="fa-solid fa-wind"></i>
+                        <span class="pm-value">--</span>
+                        <span class="pm-unit">AQI</span>
+                    </div>
+                    
+                    <div style="width: 1px; height: 20px; background: rgba(0,0,0,0.06);"></div>
+
+                    <div id="user-menu-container" style="display: flex; align-items: center; gap: 8px;">
+                        <a href="login.html" class="elegant-btn sm primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 50px;">เข้าสู่ระบบ</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="map-layout" style="gap: 2rem;">
+        <aside class="ai-panel glass-panel hover-lift" style="border-top: 3px solid var(--primary-color);">
+            <h2 class="text-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> AI แพลนเนอร์เที่ยว</h2>
+            <p style="color:var(--text-muted); margin-bottom: 2rem;">คลิกเลือกสถานที่แนะนำ หรือ <b>คลิกบนแผนที่เอง</b> เพื่อเลือกเส้นทางที่ต้องการครับ</p>
+            
+            <!-- Unified Traffic Info for Map Page -->
+            <div id="map-traffic-info" class="glass-panel" style="margin-bottom: 1.5rem; padding: 12px; background: rgba(26, 54, 93, 0.03); border: 1px solid rgba(26, 54, 93, 0.1);">
+                <div id="traffic-intelligence" class="nested-frame-outer" style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="color: var(--text-main); font-size: 1.1rem; font-weight: 700;"><i class="fa-solid fa-car-side"></i> จราจรนครพนม</h3>
+                    <div id="map-traffic-badge">
+                        <span style="background: var(--success-color); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">เรียลไทม์ (สด)</span>
+                    </div>
+                </div>
+                
+                <div class="nested-frame-inner" style="margin-top: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
+                        <span id="map-traffic-percentage" style="font-size: 2.2rem; font-weight: 800; line-height: 1;">--%</span>
+                        <span id="map-traffic-status-text" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">ไหลลื่น</span>
+                    </div>
+                    <div id="map-traffic-pbar-container" style="width: 100%; height: 8px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; margin-bottom: 12px;">
+                        <div class="traffic-bar-fill" style="width: 0%; height: 100%; background: var(--success-color);"></div>
+                    </div>
+                    <p id="map-traffic-forecast-hint" style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+                        <i class="fa-solid fa-crystal-ball"></i> กำลังวิเคราะห์แนวโน้ม...
+                    </p>
+                </div>
+            </div>
+            </div>
+            
+            <div id="manual-route-controls" style="margin-bottom: 1.5rem; display: none;">
+                <button class="elegant-btn secondary" onclick="clearManualRoute()" style="width:100%; justify-content:center; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2);">
+                    <i class="fa-solid fa-trash-can"></i> ล้างเส้นทางที่เลือกเอง
+                </button>
+            </div>
+            
+            <div id="ai-options-panel" class="ai-options" style="display:flex; flex-direction:column; gap:1.2rem;">
+                <!-- Dynamic Selection Injected by map.js -->
+            </div>
+
+            <div id="ai-loading" class="hidden" style="margin-top: 2.5rem; text-align: center;">
+                <i class="fa-solid fa-circle-notch fa-spin text-primary" style="font-size: 2.5rem;"></i>
+                <p style="margin-top: 1rem; color: var(--primary-color); font-weight:500;">กำลังคำนวณเส้นทางจากระบบอัจฉริยะ...</p>
+            </div>
+
+            <div id="ai-route-result" class="route-result hidden" style="border-color: rgba(0,0,0,0.1);">
+                <h3 class="text-secondary" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-map"></i> เส้นทางแนะนำ</h3>
+                <ul id="route-steps"></ul>
+            </div>
+        </aside>
+
+        <div id="map-container" class="glass-panel" style="flex:1; width:100%; height: 550px; padding:0; border:1px solid rgba(255,255,255,0.4); box-shadow: 0 15px 35px rgba(0,0,0,0.1); position:relative; z-index:10; overflow:hidden;">
+            <div id="map-loading-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(240,244,248,0.8); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity 0.5s;">
+                <i class="fa-solid fa-map-location-dot fa-bounce" style="font-size: 3rem; color: var(--primary-color);"></i>
+                <p style="margin-top: 1.5rem; color: var(--primary-color); font-weight: 500;">กำลังจัดเตรียมแผนที่พรีเมียม...</p>
+            </div>
+
+            <!-- Manual Routing Hints -->
+            <div id="route-hint" class="glass-panel" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); z-index:1000; padding:10px 20px; border-radius:30px; background:rgba(255,255,255,0.9); display:none; border:1px solid var(--primary-color); box-shadow:0 10px 25px rgba(0,0,0,0.1); pointer-events:none; transition: all 0.3s;">
+                <span style="color:var(--text-main); font-weight:500;"><i class="fa-solid fa-mouse-pointer text-primary"></i> <span id="hint-text">คลิกเพื่อเลือกจุดเริ่มต้น</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile AI Panel Toggle -->
+    <button class="mobile-ai-toggle" onclick="toggleAIPanel()">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+    </button>
+
+    <!-- Review Modal -->
+    <div id="review-modal-backdrop" class="modal-backdrop" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9998; backdrop-filter: blur(4px);"></div>
+    <div id="review-modal" class="elegant-modal glass-panel" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:9999; padding:2rem; width:90%; max-width:600px; max-height:80vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h3 style="color:var(--text-main); font-size:1.5rem;" id="review-place-name">รีวิวสถานที่</h3>
+            <button onclick="closeReviewModal()" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div id="reviews-list" style="margin-bottom: 2rem;">
+            <!-- Reviews will be listed here -->
+            <p style="text-align:center; color:var(--text-muted);">กำลังโหลดรีวิว...</p>
+        </div>
+
+        <div id="add-review-section" style="border-top: 1px solid rgba(0,0,0,0.1); padding-top:1.5rem;">
+            <h4 style="margin-bottom:1rem; color:var(--text-main);">เขียนรีวิวของคุณ</h4>
+            <div style="margin-bottom:1rem; color:#FFD700; font-size:1.5rem; cursor:pointer;" id="star-rating">
+                <i class="fa-regular fa-star" data-val="1"></i>
+                <i class="fa-regular fa-star" data-val="2"></i>
+                <i class="fa-regular fa-star" data-val="3"></i>
+                <i class="fa-regular fa-star" data-val="4"></i>
+                <i class="fa-regular fa-star" data-val="5"></i>
+            </div>
+            <textarea id="review-comment" class="form-control" rows="3" placeholder="ประทับใจอะไรบ้าง? แชร์ให้เพื่อนๆ นักเดินทางรู้สิ!" style="width:100%; margin-bottom:1rem; padding:10px; border-radius:10px; border:1px solid rgba(0,0,0,0.1);"></textarea>
+            <button id="submit-review-btn" class="elegant-btn primary" style="width:100%; justify-content:center;">โพสต์รีวิว</button>
+        </div>
+    </div>
+
+    <!-- Leaflet map overrides to hide the default ugly routing box text -->
+    <style>
+        .leaflet-routing-container { display: none !important; }
+    </style>
+
+    <script src="js/app.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/checkin.js"></script>
+    <script src="js/review.js"></script>
+    <script src="js/pm25.js"></script>
+    <script src="js/map.js"></script>
+    <!-- GPS Tracker: แสดงตำแหน่ง Smart Bin แบบ Realtime ผ่าน WebSocket -->
+    <!-- ต้องอยู่หลัง map.js เสมอ เพราะใช้ตัวแปร map จาก map.js -->
+    <script src="js/gps-tracker.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

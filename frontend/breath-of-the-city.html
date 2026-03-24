@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลมหายใจแห่งเมือง - MapNexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/elegant-theme.css">
+    <link rel="stylesheet" href="css/smart-city-nexus.css">
+</head>
+<body class="elegant-theme smart-city-theme">
+    <div class="bg-logo-watermark"></div>
+    
+    <nav class="glass-navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo-container">
+                    <img src="assets/images/logo.png" alt="MapNexus" style="height: 40px;">
+                    <span class="text-primary" style="font-weight: 700; font-size: 1.3rem;">Map<span class="text-secondary" style="font-weight: 400;">Nexus</span></span>
+                </a>
+            </div>
+            <div class="nav-right">
+                <a href="index.html" class="elegant-btn sm secondary"><i class="fa-solid fa-arrow-left"></i> กลับหน้าหลัก</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="section-container" style="padding-top: 15vh;">
+        <div class="reveal">
+            <small style="color: var(--sc-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">01 / สิ่งแวดล้อม</small>
+            <h1 class="hero-title" style="font-size: 3.5rem; margin-top: 0.5rem;">ลมหายใจแห่งเมือง <br><span class="text-secondary">(Breath of the City)</span></h1>
+            <p style="font-size: 1.2rem; color: var(--text-muted); max-width: 700px; margin-top: 1.5rem;">
+                ระบบติดตามคุณภาพอากาศอัจฉริยะที่ครอบคลุมทั่วทุกตารางนิ้วของจังหวัดนครพนม เราใช้เซ็นเซอร์ IoT ประสิทธิภาพสูงร่วมกับ AI เพื่อพยากรณ์ล่วงหน้าและดูแลสุขภาพของพลเมืองทุกคน
+            </p>
+        </div>
+
+        <div class="feature-grid" style="margin-top: 4rem;">
+            <div class="glass-panel" style="grid-column: span 12; padding: 3rem; text-align: center;">
+                <div id="pm25-main-value" style="font-size: 6rem; font-family: var(--font-display); font-weight: 800; color: var(--sc-primary);">--</div>
+                <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-muted);">คุณภาพอากาศ (AQI) ในพื้นที่ปัจจุบัน</div>
+                <div id="air-status-badge" style="display: inline-block; margin-top: 1.5rem; padding: 10px 25px; border-radius: 50px; font-weight: 700; font-size: 1.1rem; background: #eee;">กำลังตรวจสอบ...</div>
+            </div>
+
+            <div class="glass-panel" style="grid-column: span 6;">
+                <h3 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-masks-theater text-primary"></i> ข้อแนะนำในการปฏิบัติตัว</h3>
+                <ul id="air-action-list" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 15px;">
+                    <li><i class="fa-solid fa-circle-info text-secondary"></i> รอข้อมูลคุณภาพอากาศเพื่อรับคำแนะนำ...</li>
+                </ul>
+            </div>
+
+            <div class="glass-panel" style="grid-column: span 6;">
+                <h3 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-brain text-secondary"></i> การพยากรณ์โดย AI (24 ชม. ข้างหน้า)</h3>
+                <p style="color: var(--text-muted);">ระบบ AI คาดการณ์ว่าคุณภาพอากาศในวันพรุ่งนี้จะอยู่ในระดับ <strong class="text-primary">ดีเยี่ยม</strong> เหมาะแก่การทำกิจกรรมกลางแจ้งบริเวณริมแม่น้ำโขง</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/pm25.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Re-use PM2.5 logic from existing widget
+            if (window.fetchPM25Data) {
+                // Initialize dedicated view logic here if needed
+            }
+        });
+    </script>
+</body>
+</html>

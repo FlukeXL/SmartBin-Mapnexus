@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI วางแผนเส้นทาง - MapNexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/elegant-theme.css">
+    <link rel="stylesheet" href="css/smart-city-nexus.css">
+</head>
+<body class="elegant-theme smart-city-theme">
+    <div class="bg-logo-watermark"></div>
+    
+    <nav class="glass-navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo-container">
+                    <img src="assets/images/logo.png" alt="MapNexus" style="height: 40px;">
+                    <span class="text-primary" style="font-weight: 700; font-size: 1.3rem;">Map<span class="text-secondary" style="font-weight: 400;">Nexus</span></span>
+                </a>
+            </div>
+            <div class="nav-right">
+                <a href="index.html" class="elegant-btn sm secondary"><i class="fa-solid fa-arrow-left"></i> กลับหน้าหลัก</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="section-container" style="padding-top: 15vh;">
+        <div class="reveal">
+            <small style="color: var(--sc-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">04 / ความฉลาด</small>
+            <h1 class="hero-title" style="font-size: 3.5rem; margin-top: 0.5rem;">AI วางแผนเส้นทาง <br><span class="text-secondary">(AI Route Planner)</span></h1>
+            <p style="font-size: 1.2rem; color: var(--text-muted); max-width: 700px; margin-top: 1.5rem;">
+                ขุมพลังการประมวลผลขั้นสูงที่จะช่วยคุณออกแบบการเดินทางให้สมบูรณ์แบบที่สุด ไม่ว่าจะเป็นการหลีกเลี่ยงรถติด การเลือกเส้นทางที่สวยงามที่สุด หรือการวางแผนทัวร์ไหว้พระธาตุประจำวันเกิด
+            </p>
+        </div>
+
+        <!-- Traffic Status Widget -->
+        <div id="traffic-widget" style="margin-top: 3rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8); border-radius: 20px; padding: 2rem; box-shadow: 0 15px 35px rgba(0,0,0,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; color: var(--sc-primary);">
+                    <i class="fa-solid fa-traffic-light"></i> สภาพจราจรปัจจุบัน — นครพนม
+                </h3>
+                <div id="traffic-overall-badge" style="padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; background: #dcfce7; color: #166534;">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...
+                </div>
+            </div>
+
+            <div id="traffic-roads-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+                <!-- Populated by JS -->
+                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem;"></i>
+                    <p style="margin-top: 10px;">กำลังดึงข้อมูลจราจรจากระบบ AI...</p>
+                </div>
+            </div>
+
+            <div id="traffic-ai-rec" style="margin-top: 1.5rem; padding: 1rem 1.5rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; font-size: 0.9rem; color: #92400e; display: none;">
+                <i class="fa-solid fa-lightbulb"></i> <span id="traffic-ai-rec-text"></span>
+            </div>
+
+            <p style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); text-align: right;">
+                <i class="fa-solid fa-rotate"></i> อัปเดตอัตโนมัติทุก 30 วินาที
+            </p>
+        </div>
+
+        <div class="feature-grid" style="margin-top: 3rem;">
+            <div class="glass-panel" style="grid-column: span 8;">
+                <h3 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary"></i> ฟีเจอร์เด่นของระบบ AI</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div style="background: rgba(0,0,0,0.02); padding: 1.5rem; border-radius: 12px;">
+                        <i class="fa-solid fa-route" style="font-size: 1.5rem; color: var(--sc-secondary); margin-bottom: 10px;"></i>
+                        <h4>เส้นทางที่ดีที่สุด</h4>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.02); padding: 1.5rem; border-radius: 12px;">
+                        <i class="fa-solid fa-clock-rotate-left" style="font-size: 1.5rem; color: var(--sc-secondary); margin-bottom: 10px;"></i>
+                        <h4>คำนวณเวลาแม่นยำ</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel" style="grid-column: span 4; background: linear-gradient(135deg, var(--sc-primary), var(--sc-primary-dark)); color: #fff;">
+                <h3>พร้อมใช้งานหรือยัง?</h3>
+                <p style="margin-top: 1rem; opacity: 0.9;">สัมผัสประสบการณ์การนำทางแห่งอนาคตบนแผนที่ Digital Twin ของเรา</p>
+                <a href="map.html" class="elegant-btn accent" style="margin-top: 2rem; width: 100%;">เปิดตัวนำทางอัจฉริยะ</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        async function loadTrafficStatus() {
+            try {
+                const res = await fetch('/api/traffic/status');
+                const response = await res.json();
+                const roads = Array.isArray(response) ? response : (response.roads || []);
+                const aiSummary = response.aiSummary || null;
+
+                if (roads.length === 0) return;
+
+                // Overall badge
+                const avgLevel = roads.reduce((s, r) => s + r.level, 0) / roads.length;
+                const badge = document.getElementById('traffic-overall-badge');
+                if (avgLevel > 70) {
+                    badge.style.background = '#fee2e2'; badge.style.color = '#991b1b';
+                    badge.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> วิกฤต — ติดขัดหนัก';
+                } else if (avgLevel > 40) {
+                    badge.style.background = '#fef3c7'; badge.style.color = '#92400e';
+                    badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> หนาแน่นปานกลาง';
+                } else {
+                    badge.style.background = '#dcfce7'; badge.style.color = '#166534';
+                    badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> การจราจรคล่องตัว';
+                }
+
+                // Roads grid
+                const grid = document.getElementById('traffic-roads-grid');
+                grid.innerHTML = roads.map(road => `
+                    <div style="padding: 1.2rem; border-radius: 14px; background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-main);">${road.name}</span>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: ${road.color}; background: ${road.level > 75 ? '#fee2e2' : road.level > 45 ? '#fef3c7' : '#dcfce7'}; padding: 3px 10px; border-radius: 20px;">${road.level}%</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden; margin-bottom: 10px;">
+                            <div style="width: ${road.level}%; height: 100%; background: ${road.color}; border-radius: 4px; transition: width 1s ease;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.8rem; color: ${road.color}; font-weight: 600;">${road.status}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">1 ชม.: <b style="color:${road.nextLevel > 75 ? '#ef4444' : '#10b981'};">${road.nextLevel}%</b></span>
+                        </div>
+                        ${road.nextLevel > 75 ? `<div style="margin-top: 8px; font-size: 0.75rem; color: #ef4444; font-weight: 600;"><i class="fa-solid fa-clock"></i> คาดว่าจะติดขัดใน 1 ชม.</div>` : ''}
+                    </div>
+                `).join('');
+
+                // AI Recommendation
+                if (aiSummary && aiSummary.recommendation) {
+                    const recBox = document.getElementById('traffic-ai-rec');
+                    document.getElementById('traffic-ai-rec-text').innerText = aiSummary.recommendation;
+                    recBox.style.display = 'block';
+                }
+            } catch (e) {
+                console.error('Traffic widget error:', e);
+            }
+        }
+
+        loadTrafficStatus();
+        setInterval(loadTrafficStatus, 30000);
+    </script>
+</body>
+</html>

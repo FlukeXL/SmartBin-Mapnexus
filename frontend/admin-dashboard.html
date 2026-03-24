@@ -1,0 +1,2720 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapNexus - ศูนย์บัญชาการเมืองอัจฉริยะนครพนม</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Maps API for Real-time Traffic -->
+    <!-- Google Maps script is now loaded dynamically in initDashboard() -->
+
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/elegant-theme.css">
+    <link rel="stylesheet" href="css/smart-city-nexus.css">
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+    <style>
+        .elegant-pattern { 
+            background-image: radial-gradient(rgba(139, 92, 246, 0.12) 2px, transparent 2px); 
+            background-size: 40px 40px;
+        }
+        .naga-bg {
+            position: fixed;
+            bottom: -100px;
+            right: -100px;
+            width: 600px;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .admin-layout { display: flex; min-height: 100vh; position: relative; }
+        .admin-sidebar { 
+            width: 320px; 
+            position: fixed; 
+            height: 100vh; 
+            overflow-y: auto;
+            border-radius: 0; 
+            border-right: 1px solid rgba(0,0,0,0.05); 
+            padding: 2.5rem 1.5rem 1.5rem; 
+            background: #fff;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.02); 
+            z-index: 1000; 
+            display: flex; 
+            flex-direction: column;
+        }
+        .admin-nav { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 3rem; flex-grow: 1; }
+        .admin-nav a { padding: 1rem 1.2rem; border-radius: 12px; transition: 0.3s; color: var(--text-muted); display: flex; align-items: center; gap: 12px; font-weight: 500; text-decoration: none; }
+        .admin-nav a.active { background: rgba(124, 58, 237, 0.1); color: var(--primary-color); border-left: 4px solid var(--primary-color); }
+        .admin-nav a:hover:not(.active) { color: var(--primary-color); background: rgba(124, 58, 237, 0.05); }
+        .admin-sidebar-footer { padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.06); margin-top: auto; flex-shrink: 0; position: sticky; bottom: 0; background: #fff; z-index: 10; }
+
+        .admin-content { 
+            flex: 1; 
+            padding: 3rem; 
+            margin-left: 320px; /* SAME AS SIDEBAR WIDTH */
+            transition: all 0.3s ease;
+        }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; gap: 20px; }
+        
+        /* Mobile Admin Header */
+        .mobile-admin-header {
+            display: none;
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            padding: 0 1.5rem;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+
+        .menu-toggle-btn {
+            background: rgba(124, 58, 237, 0.1);
+            color: var(--primary-color);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .menu-toggle-btn:active { transform: scale(0.9); }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            z-index: 1500;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s;
+        }
+
+        .sidebar-overlay.active { opacity: 1; visibility: visible; }
+
+        .digital-clock {
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .digital-clock i {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+        .digital-clock span {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: 1px;
+        }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .stat-card { border-top: 4px solid; padding: 1.8rem; border-radius: 20px; text-align: left; }
+        .stat-card h3 { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1rem; font-weight: 500;}
+        .stat-card .value { font-size: 2.4rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;}
+        
+        .charts-grid { display: grid; grid-template-columns: 2fr 1.2fr; gap: 2rem; }
+        .map-traffic-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; }
+        .chart-container { padding: 2.5rem; }
+        
+        @media (max-width: 1100px) { 
+            .charts-grid, .map-traffic-grid { grid-template-columns: 1fr !important; } 
+        }
+        
+        @media (max-width: 1024px) {
+            .mobile-admin-header { display: flex; }
+            .admin-layout { display: block; }
+            .admin-sidebar { 
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                width: 300px;
+                background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+                z-index: 2000;
+                transition: transform 0.5s var(--ease-out-expo), visibility 0.5s;
+                transform: translateX(-110%);
+                visibility: hidden;
+                border-radius: 0;
+                padding: 4rem 1.5rem 2rem;
+                border-right: 1px solid rgba(124, 58, 237, 0.1);
+                box-shadow: 25px 0 60px rgba(0,0,0,0.15);
+                border-right: 1px solid rgba(124, 58, 237, 0.1);
+            }
+            .admin-sidebar.active { 
+                transform: translateX(0); 
+                visibility: visible;
+            }
+            .admin-content { padding: 1rem; width: 100% !important; overflow-x: hidden; min-height: calc(100vh - 70px); }
+            
+            .dashboard-header { 
+                flex-direction: column !important; 
+                align-items: flex-start !important; 
+                padding: 1rem 0 !important;
+                margin-bottom: 2rem !important;
+                gap: 15px !important;
+                background: transparent !important;
+            }
+            
+            #admin-main-title { 
+                font-size: 1.8rem !important; 
+                line-height: 1.2 !important; 
+                margin: 0 !important; 
+                color: var(--sc-primary) !important;
+            }
+            
+            #admin-sub-title { 
+                font-size: 0.85rem !important; 
+                line-height: 1.4 !important;
+                margin-top: 5px !important;
+            }
+
+            .digital-clock { 
+                width: 100%; 
+                justify-content: flex-start; 
+                padding: 10px 15px; 
+                background: rgba(255,255,255,0.6) !important;
+                border: 1px solid rgba(0,0,0,0.05) !important;
+                border-radius: 12px !important;
+                box-shadow: none;
+            }
+            
+            .stat-grid { grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+            .stat-card { padding: 1.2rem; border-radius: 15px !important; }
+            .stat-card .value { font-size: 1.6rem; }
+            .chart-container { padding: 1rem; border-radius: 15px !important; }
+            #admin-map-container { min-height: 550px !important; }
+        }
+
+        /* --- WEATHER INTELLIGENCE DESKTOP & PREMIUM STYLES --- */
+        .weather-area-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        @media (max-width: 1200px) {
+            .weather-area-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .weather-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.8);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.03), inset 0 0 0 1px rgba(255,255,255,0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            min-height: 220px;
+        }
+
+        .weather-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 45px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(255,255,255,0.8);
+        }
+
+        /* Decorative Background Blob */
+        .weather-card::before {
+            content: '';
+            position: absolute;
+            top: -30%; right: -20%;
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .weather-card-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 2;
+        }
+
+        .weather-main { display: flex; flex-direction: column; gap: 8px; }
+        .weather-main-header { display: flex; align-items: center; gap: 10px; }
+        .weather-main h4 { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.3px; }
+        .weather-main i.icon-lg { font-size: 1.4rem; color: var(--primary-color); }
+        .weather-card-info .temp { font-size: 3rem; font-weight: 800; color: var(--text-main); line-height: 1; letter-spacing: -1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.02); }
+
+        .weather-details {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        .weather-desc { font-size: 0.85rem; font-weight: 600; color: var(--primary-color); text-transform: uppercase; letter-spacing: 0.5px; background: rgba(124, 58, 237, 0.1); padding: 4px 10px; border-radius: 8px; display: inline-block; }
+        .weather-metrics { display: flex; gap: 12px; margin-top: 5px; font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+        .weather-metrics span { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.02); padding: 4px 8px; border-radius: 6px; }
+
+        .weather-card-sparkline {
+            flex-grow: 1;
+            position: relative;
+            z-index: 1;
+            min-height: 70px;
+            margin-top: auto;
+            border-top: 1px dashed rgba(0,0,0,0.05);
+            padding-top: 15px;
+        }
+        .sparkline-label {
+            position: absolute;
+            bottom: 0px; right: 0;
+            font-size: 0.65rem; color: var(--text-muted);
+            font-weight: 600; background: rgba(255,255,255,0.8);
+            padding: 2px 6px; border-radius: 4px;
+        }
+
+        @media (max-width: 600px) {
+            .stat-grid { grid-template-columns: 1fr; gap: 10px; }
+            .stat-card { padding: 1rem; }
+            .value { font-size: 1.5rem !important; }
+            .chart-container { padding: 0.8rem !important; }
+            #admin-map-container { min-height: 550px !important; }
+            
+            /* Activity Section Specific Fixes */
+            #admin-crowd-list { 
+                grid-template-columns: 1fr !important; /* Force stack on mobile */
+            }
+            #section-activities h3 { 
+                flex-wrap: wrap; font-size: 1.1rem !important; 
+            }
+
+            /* Weather Intelligence Mobile Optimization */
+            .weather-area-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+            .weather-card {
+                padding: 1rem !important;
+                gap: 15px !important;
+                min-height: auto !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+            .weather-card-info {
+                flex: none !important;
+                border-right: none !important;
+                border-bottom: 1px solid rgba(0,0,0,0.05);
+                padding-right: 0 !important;
+                padding-bottom: 15px !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+            .weather-card-info .weather-main {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            .weather-card-info h4 { font-size: 1rem !important; }
+            .weather-card-info .temp { font-size: 2.2rem !important; }
+            .weather-card-sparkline {
+                height: 100px !important;
+            }
+        }
+
+        /* --- ระบบวิเคราะห์ข้อมูลดิจิทัลทวิน (Digital Twin HUD) --- */
+        .admin-map-wrapper { width: 100%; height: 100%; overflow: hidden; }
+        #admin-map { transition: all 1.8s cubic-bezier(0.19, 1, 0.22, 1); transform-origin: 50% 100%; }
+        #admin-map.tilted { 
+            transform: rotateX(40deg) scale(1.3) translateY(-10%) !important; 
+            /* Filter removed as per user request for original look */
+        }
+
+        .twin-marker-future { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            width: 20px; height: 20px; position: relative;
+        }
+        
+        /* Scanning Ring Effect */
+        .marker-scan-ring {
+            position: absolute; width: 60px; height: 60px;
+            border: 2px solid var(--glow-color, #00f2ff); border-radius: 50%;
+            animation: heart-beat 2s infinite; opacity: 0;
+        }
+        .marker-scan-ring:nth-child(2) { animation-delay: 0.5s; }
+        
+        .marker-dot-core {
+            width: 10px; height: 10px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 20px var(--glow-color, #00f2ff), 0 0 40px var(--glow-color, #00f2ff);
+            z-index: 10;
+        }
+
+        /* High-Tech Terminal Label */
+        .marker-terminal-label {
+            position: absolute; left: 35px; top: -15px;
+            background: rgba(0, 20, 40, 0.85); color: var(--glow-color, #00f2ff);
+            padding: 8px 15px; border: 1px solid var(--glow-color, #00f2ff);
+            font-family: 'Roboto Mono', monospace !important; font-size: 0.8rem;
+            white-space: nowrap; backdrop-filter: blur(8px);
+            border-left: 5px solid var(--glow-color, #00f2ff);
+            box-shadow: 0 0 25px rgba(0, 242, 255, 0.3);
+            display: flex; flex-direction: column; gap: 4px;
+            pointer-events: none;
+        }
+        .marker-terminal-label .coord { font-size: 0.65rem; opacity: 0.6; font-weight: 400; }
+
+        @keyframes heart-beat {
+            0% { transform: scale(0.4); opacity: 1; }
+            100% { transform: scale(2.0); opacity: 0; }
+        }
+
+        /* HUD Overlays and Telemetry */
+        .hud-scanline {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0, 242, 255, 0.05) 50%);
+            background-size: 100% 8px; z-index: 5; pointer-events: none; opacity: 0.3;
+            animation: scanline-move 20s linear infinite;
+        }
+        @keyframes scanline-move {
+            from { background-position: 0 0; }
+            to { background-position: 0 100%; }
+        }
+
+        .hud-telemetry {
+            position: absolute; bottom: 20px; right: 20px; z-index: 1000;
+            font-family: 'Roboto Mono', monospace; font-size: 0.65rem; color: rgba(255,255,255,0.6);
+            display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+            pointer-events: none; text-shadow: 0 0 5px rgba(0,0,0,0.8);
+        }
+        .hud-corner-br { border-right: 2px solid rgba(0, 242, 255, 0.5); border-bottom: 2px solid rgba(0, 242, 255, 0.5); width: 30px; height: 30px; position: absolute; bottom: -5px; right: -5px; }
+        .hud-corner-tl { border-left: 2px solid rgba(0, 242, 255, 0.5); border-top: 2px solid rgba(0, 242, 255, 0.5); width: 30px; height: 30px; position: absolute; top: -5px; left: -5px; }
+
+        @keyframes pulse-red {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        /* Hide generic popups to keep it clean */
+        .leaflet-popup { display: none !important; }
+        .leaflet-tooltip { display: none !important; }
+        /* But show bins map popups */
+        #bins-map .leaflet-popup { display: block !important; }
+        #bins-map .leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        #bins-map .leaflet-popup-content { margin: 12px 14px; }
+
+        .twin-toggle-btn {
+            background: rgba(18, 24, 38, 0.85);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .twin-toggle-btn.active {
+            background: var(--sc-secondary);
+            border-color: transparent;
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+        }
+
+        /* --- ส่วนติดต่อผู้ใช้ดิจิทัลทวินระดับสูง --- */
+        .twin-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .twin-core {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 10px #fff;
+            position: relative;
+            z-index: 2;
+        }
+        .twin-glow {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--glow-color, #00d2ff);
+            opacity: 0.6;
+            filter: blur(8px);
+            animation: twin-pulse 2s infinite ease-in-out;
+        }
+        .twin-label {
+            position: absolute;
+            left: 50%;
+            top: -25px;
+            transform: translateX(-50%);
+            background: rgba(18, 24, 38, 0.9);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: 0.3s;
+        }
+        .twin-marker:hover .twin-label { opacity: 1; top: -30px; }
+
+        @keyframes twin-pulse {
+            0% { transform: scale(0.8); opacity: 0.4; }
+            50% { transform: scale(1.5); opacity: 0.2; }
+            100% { transform: scale(0.8); opacity: 0.4; }
+        }
+
+        .dark-map-container {
+            filter: grayscale(1) invert(1) contrast(0.9) brightness(1.2); /* Low-budget dark mode if tile server is slow, but we'll use CartoDB */
+        }
+        
+        .map-advanced-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .twin-toggle-btn {
+            background: rgba(18, 24, 38, 0.85);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .twin-toggle-btn.active {
+            background: var(--sc-secondary);
+            border-color: transparent;
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+        }
+        @media (max-width: 900px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                z-index: 2000;
+                width: 280px;
+                box-shadow: 20px 0 60px rgba(0,0,0,0.1);
+                padding: 2rem 1.2rem 1.2rem;
+            }
+            .admin-sidebar.active {
+                transform: translateX(0);
+            }
+            .admin-content {
+                margin-left: 0 !important;
+                padding: 1rem !important;
+                padding-top: 80px !important;
+            }
+            .hero-title {
+                font-size: 2.2rem !important;
+                letter-spacing: -1px !important;
+            }
+            .stat-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 10px !important;
+            }
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .logo-area.desktop-only {
+                display: none !important;
+            }
+            .charts-grid, .map-traffic-grid {
+                grid-template-columns: 1fr !important;
+            }
+            #admin-map-container {
+                min-height: 400px !important;
+            }
+            .weather-area-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .digital-clock {
+                width: 100%;
+            }
+        }
+        @media (max-width: 480px) {
+            .stat-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .stat-card .value { font-size: 1.6rem !important; }
+            #admin-map-container { min-height: 320px !important; }
+        }
+    </style>
+</head>
+<body class="elegant-theme smart-city-theme">
+    <div class="bg-logo-watermark"></div>
+    <div class="elegant-pattern"></div>
+
+    <div class="sidebar-overlay" id="admin-overlay" onclick="toggleAdminMenu()"></div>
+
+    <header class="mobile-admin-header">
+        <div class="logo-area" style="display: flex; align-items: center; gap: 12px;">
+            <div style="background: var(--sc-primary); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);">
+                <i class="fa-solid fa-layer-group" style="font-size: 0.9rem;"></i>
+            </div>
+            <span style="font-weight: 700; color: var(--sc-primary); font-size: 1.2rem; letter-spacing: -0.5px;">ระบบเมืองอัจฉริยะ</span>
+        </div>
+        <button class="menu-toggle-btn" onclick="toggleAdminMenu()">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </header>
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar" id="admin-sidebar" style="position: fixed; height: 100vh; overflow-y: auto;">
+            <div class="logo-area desktop-only" style="display: flex; align-items: center; gap: 15px; margin-bottom: 3.5rem; position: relative; z-index: 100; padding: 10px 5px;">
+                <div style="background: var(--sc-primary); min-width: 48px; width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; box-shadow: 0 8px 20px rgba(46, 16, 101, 0.25);">
+                    <i class="fa-solid fa-compass-drafting" style="font-size: 1.4rem;"></i>
+                </div>
+                <h2 style="font-family: var(--font-display); font-size: 1.6rem; margin: 0; color: var(--sc-primary); font-weight: 800; letter-spacing: -1px; white-space: nowrap;">นครพนม Smart</h2>
+            </div>
+            
+            <div class="admin-nav">
+                <a href="admin-dashboard.html?section=overview" class="active" id="nav-overview">
+                    <i class="fa-solid fa-chart-pie"></i> <span>ภาพรวมระบบ</span>
+                    <div id="traffic-alert-dot" style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%; margin-left: auto; display: none;"></div>
+                </a>
+                <a href="admin-analytics.html" id="nav-management"><i class="fa-solid fa-city"></i> การบริหารเมือง</a>
+                <a href="admin-dashboard.html?section=activities" id="nav-activities"><i class="fa-solid fa-users-viewfinder"></i> ติดตามกิจกรรมเมือง</a>
+                <a href="admin-dashboard.html?section=waste-bins" id="nav-waste-bins"><i class="fa-solid fa-trash-can"></i> ระบบถังขยะอัจฉริยะ</a>
+            </div>
+
+            <div class="admin-sidebar-footer">
+                <a href="javascript:void(0)" onclick="localStorage.clear(); window.location.href='index.html';" style="padding: 1rem 1.2rem; border-radius: 12px; transition: 0.3s; color: #ef4444; display: flex; align-items: center; gap: 12px; font-weight: 600; text-decoration: none; background: rgba(239, 68, 68, 0.05);">
+                    <i class="fa-solid fa-power-off"></i> <span>ออกจากระบบ</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="admin-content">
+            <div class="bg-logo-watermark"></div>
+            <div class="dashboard-header">
+                <div>
+                    <h1 id="admin-main-title" class="hero-title" style="font-size: 3.5rem; margin-bottom: 5px; color: var(--sc-primary);">แผงควบคุมหลัก</h1>
+                    <p id="admin-sub-title" style="color: var(--sc-text-neutral); font-size: 1.1rem; font-family: var(--font-body); border-left: 3px solid var(--sc-secondary); padding-left: 1rem;">ระบบบริหารจัดการเมืองอัจฉริยะนครพนม (Real-time)</p>
+                </div>
+                <div class="digital-clock glass-panel">
+                    <div style="background: rgba(26, 54, 93, 0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-regular fa-clock" style="color: var(--primary-color); font-size: 1.1rem;"></i>
+                    </div>
+                    <span id="realtime-clock">00:00:00</span>
+                </div>
+            </div>
+
+            <div id="section-dashboard">
+                <div class="stat-grid">
+                    <div class="stat-card glass-panel hover-lift" style="border-top-color: var(--primary-color); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h3>จำนวนผู้เข้าชมวันนี้</h3>
+                            <div class="value" id="visitors-today-val" style="margin-bottom: 0;">--</div>
+                            <p style="color: var(--success-color); font-size: 0.8rem; font-weight: 600; margin-top: 5px;"><i class="fa-solid fa-arrow-up"></i> ข้อมูลจริง (SQL)</p>
+                        </div>
+                        <div style="height: 50px; margin-top: 10px;">
+                            <canvas id="sparkline-visitors"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card glass-panel hover-lift" id="pm25-stat-card" style="border-top-color: var(--accent-color); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer;">
+                        <div>
+                            <h3>คุณภาพอากาศ PM2.5 (เรียลไทม์)</h3>
+                            <div class="value" id="pm25-val" style="margin-bottom: 0;">-- <span style="font-size: 0.9rem; font-weight: 400;">AQI</span></div>
+                            <p id="pm25-status" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 5px;"><i class="fa-solid fa-wind"></i> กำลังโหลด...</p>
+                        </div>
+                        <div style="height: 50px; margin-top: 10px;">
+                            <canvas id="sparkline-pm25"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="stat-card glass-panel hover-lift" style="border-top-color: var(--secondary-color); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h3>การขอเส้นทางด้วย AI</h3>
+                            <div class="value" id="ai-requests-val" style="margin-bottom: 0;">--</div>
+                            <p style="color: var(--primary-color); font-size: 0.8rem; font-weight: 600; margin-top: 5px;"><i class="fa-solid fa-microchip"></i> AI Logs</p>
+                        </div>
+                        <div style="height: 50px; margin-top: 10px;">
+                            <canvas id="sparkline-ai"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="stat-card glass-panel hover-lift" style="border-top-color: var(--purple-color); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h3>ยอดเช็คอินสูงสุด</h3>
+                            <div class="value" id="top-place-name" style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 0;">--</div>
+                            <p id="top-place-count" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 5px;">-- ครั้ง / วัน</p>
+                        </div>
+                        <div style="height: 50px; margin-top: 10px; display: flex; align-items: flex-end; justify-content: flex-end; opacity: 0.3;">
+                            <i class="fa-solid fa-ranking-star" style="font-size: 2rem; color: var(--purple-color);"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ส่วนการวิเคราะห์สภาพอากาศอัจฉริยะ -->
+                <div class="chart-container glass-panel hover-lift" style="margin-bottom: 2.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                        <div>
+                            <h3 style="color: var(--text-main); font-size: 1.4rem; display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+                                <i class="fa-solid fa-cloud-bolt text-success"></i> สภาพอากาศนครพนม (เรียลไทม์)
+                            </h3>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">ข้อมูลพยากรณ์และสภาพอากาศสดจากฐานข้อมูล SQL จังหวัดนครพนม</p>
+                        </div>
+                        <div id="weather-sync-badge" style="background: rgba(139, 92, 246, 0.1); color: var(--sc-secondary); padding: 6px 15px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; background: var(--sc-secondary); border-radius: 50%; animation: pulse-green 1.5s infinite;"></div> เชื่อมต่อฐานข้อมูล SQL สำเร็จ
+                        </div>
+                    </div>
+                    
+                    <!-- Horizontal District Grid -->
+                    <div id="admin-weather-areas-grid" class="weather-area-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="loading-state">กำลังดึงข้อมูลสภาพอากาศ...</div>
+                    </div>
+
+                    <div style="padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05);">
+                        <div id="admin-weather-forecast" style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: thin;">
+                            <!-- Forecast items -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Traffic Section -->
+                <div class="charts-grid map-traffic-grid" style="margin-bottom: 2.5rem;">
+                    <div class="chart-container glass-panel hover-lift" id="admin-map-container" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; min-height: 700px;">
+                        <div class="map-header-bar">
+                            <h3 style="margin: 0; color: var(--text-main); font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+                                <i class="fa-solid fa-map-location-dot" style="color: var(--sc-secondary);"></i> แผนที่จราจรและระบบนำทางอัจฉริยะ (Interactive Map)
+                            </h3>
+                            <div class="map-modes-toggle" style="display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.05); padding: 5px; border-radius: 12px;">
+                                <button id="twin-toggle-norm" class="twin-toggle-btn active" onclick="setMapMode('normal')">
+                                    <i class="fa-solid fa-map"></i> พื้นฐาน
+                                </button>
+                                <button id="twin-toggle-adv" class="twin-toggle-btn" onclick="setMapMode('advanced')">
+                                    <i class="fa-solid fa-satellite"></i> Digital Twin (3D)
+                                </button>
+                                <div style="width: 1px; height: 20px; background: rgba(0,0,0,0.1); margin: 0 4px;"></div>
+                                <button id="clear-admin-map-btn" class="twin-toggle-btn" onclick="clearAdminRoute()" style="display: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                    <i class="fa-solid fa-rotate-left"></i> ล้างเส้นทาง
+                                </button>
+                            </div>
+                        </div>
+                        <div style="position: relative; flex: 1; overflow: hidden; background: #f1f5f9; border-radius: 0 0 16px 16px;">
+                            <div class="hud-scanline"></div>
+                            <div class="hud-telemetry">
+                                <span style="color: #00f2ff; font-weight: 700;">ระบบ: ออนไลน์</span>
+                                <span>พื้นที่: นครพนม-เขต 01</span>
+                                <span>มาตราส่วน: 1:12000 FIXED</span>
+                                <span>สัญญาณ: เสถียร [เชื่อมต่อแล้ว]</span>
+                                <div class="hud-corner-br"></div>
+                            </div>
+                            <div style="position: absolute; top: 15px; left: 15px; z-index: 1001; pointer-events: none;">
+                                <div class="hud-corner-tl"></div>
+                            </div>
+                            <div style="position: absolute; top: 20px; right: 20px; z-index: 1000; pointer-events: none;">
+                                <div style="background: #ef4444; color: #fff; padding: 4px 12px; border-radius: 4px; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                                    <div style="width: 6px; height: 6px; background: #fff; border-radius: 50%; animation: pulse-red 1s infinite;"></div> กำลังถ่ายทอดสด 
+                                </div>
+                            </div>
+                            <div class="admin-map-wrapper">
+                                <div id="admin-map" style="height: 100%; width: 100%; z-index: 1;" data-key=""></div>
+                            </div>
+                            <div id="admin-route-hint" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); z-index:1000; padding:8px 15px; border-radius:20px; background:rgba(255,255,255,0.9); border:1px solid var(--primary-color); box-shadow:0 10px 25px rgba(0,0,0,0.1); pointer-events:none; transition: all 0.3s; font-size:0.85rem;">
+                                <span style="color:var(--text-main); font-weight:500;"><i class="fa-solid fa-hand-pointer text-primary"></i> <span id="admin-hint-text">จิ้มบนแผนที่เพื่อเริ่มตรวจสอบเส้นทาง</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Traffic Grid (4 Roads) -->
+                    <div class="chart-container" style="padding: 0; display: flex; flex-direction: column; gap: 1.5rem;">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-main); font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-car-side" style="color: var(--sc-secondary);"></i> สถานภาพจราจร (พยากรณ์ด้วย AI)
+                        </h3>
+                        
+                        <div id="traffic-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; flex: 1;">
+                            <!-- Static cards to be updated by JS -->
+                            <div class="stat-card glass-panel hover-lift" id="road-card-0" style="border-top-color: var(--success-color); padding: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <h4 id="road-name-0" style="margin:0; font-size: 0.9rem; color: var(--text-muted);">ถนนสุนทรวิจิตร</h4>
+                                    <i class="fa-solid fa-circle-check" style="color: var(--success-color);"></i>
+                                </div>
+                                <div class="value" id="road-val-0" style="font-size: 1.8rem; margin-bottom: 5px;">--%</div>
+                                <div id="road-trend-0" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">
+                                    AI: <span id="road-pred-0">วิเคราะห์...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card glass-panel hover-lift" id="road-card-1" style="border-top-color: var(--primary-color); padding: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <h4 id="road-name-1" style="margin:0; font-size: 0.9rem; color: var(--text-muted);">ถนนนิตโย</h4>
+                                    <i class="fa-solid fa-circle-check" style="color: var(--primary-color);"></i>
+                                </div>
+                                <div class="value" id="road-val-1" style="font-size: 1.8rem; margin-bottom: 5px;">--%</div>
+                                <div id="road-trend-1" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">
+                                    AI: <span id="road-pred-1">วิเคราะห์...</span>
+                                </div>
+                            </div>
+
+                            <div class="stat-card glass-panel hover-lift" id="road-card-2" style="border-top-color: var(--accent-color); padding: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <h4 id="road-name-2" style="margin:0; font-size: 0.9rem; color: var(--text-muted);">ถนนอภิบาลบัญชา</h4>
+                                    <i class="fa-solid fa-circle-check" style="color: var(--accent-color);"></i>
+                                </div>
+                                <div class="value" id="road-val-2" style="font-size: 1.8rem; margin-bottom: 5px;">--%</div>
+                                <div id="road-trend-2" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">
+                                    AI: <span id="road-pred-2">วิเคราะห์...</span>
+                                </div>
+                            </div>
+
+                            <div class="stat-card glass-panel hover-lift" id="road-card-3" style="border-top-color: var(--purple-color); padding: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <h4 id="road-name-3" style="margin:0; font-size: 0.9rem; color: var(--text-muted);">ถนนชยางกูร</h4>
+                                    <i class="fa-solid fa-circle-check" style="color: var(--purple-color);"></i>
+                                </div>
+                                <div class="value" id="road-val-3" style="font-size: 1.8rem; margin-bottom: 5px;">--%</div>
+                                <div id="road-trend-3" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">
+                                    AI: <span id="road-pred-3">วิเคราะห์...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel" style="padding: 1.5rem; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.1); border-radius: 12px; margin-top: auto;">
+                            <h4 style="font-size: 0.9rem; color: var(--sc-secondary); margin-bottom: 8px;"><i class="fa-solid fa-brain"></i> วิเคราะห์การจราจรโดย AI</h4>
+                            <div id="congested-roads-alert" style="margin-bottom: 10px; display: none;">
+                                <div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> ถนนที่การจราจรหนาแน่น: <span id="congested-roads-list">--</span>
+                                </div>
+                            </div>
+                            <p id="ai-traffic-summary" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+                                ระบบกำลังประมวลผลสภาพการจราจรทั่วเมืองเพื่อคาดการณ์จุดวิกฤต...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid" style="margin-bottom: 2.5rem;">
+                    <div class="chart-container glass-panel hover-lift">
+                        <h3 style="margin-bottom: 2rem; color: var(--text-main); font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-users" style="color: var(--sc-secondary);"></i> ปริมาณนักท่องเที่ยวรายสัปดาห์
+                        </h3>
+                        <div style="height: 350px;">
+                             <canvas id="visitorChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container glass-panel hover-lift" style="text-align: center;">
+                        <h3 style="margin-bottom: 2rem; color: var(--text-main); font-size: 1.3rem;">รูปแบบการท่องเที่ยวที่สนใจ</h3>
+                        <div style="height: 320px; display: flex; justify-content: center; align-items: center;">
+                            <canvas id="aiPieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container glass-panel hover-lift">
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-robot" style="color: var(--sc-secondary);"></i> AI พยากรณ์จราจรล่วงหน้า (24 ชม.)
+                        </h3>
+                        <div style="height: 250px;">
+                            <canvas id="trafficForecastChart"></canvas>
+                        </div>
+                        <p style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+                            <i class="fa-solid fa-circle-info"></i> พยากรณ์อิงจากสถิติการใช้ถนนและเหตุการณ์สำคัญในนครพนม
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Principles of Data Extraction -->
+                <div class="chart-container glass-panel" style="margin-top: 2rem; background: var(--naga-gradient); color: #fff; border: none; overflow: hidden;">
+                    <div style="position: absolute; right: -20px; bottom: -20px; font-size: 10rem; opacity: 0.1; transform: rotate(-15deg);">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <h3 style="margin-bottom: 1.5rem; color: #fff; font-size: 1.4rem; display: flex; align-items: center; gap: 12px; position: relative; z-index: 2;">
+                        <i class="fa-solid fa-microchip"></i> หลักการประมวลผลข้อมูล (Data Intelligence)
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; position: relative; z-index: 2;">
+                        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                            <h4 style="margin-bottom: 10px; color: #fff;"><i class="fa-solid fa-satellite-dish"></i> การดึงข้อมูลแบบ Real-time</h4>
+                            <p style="font-size: 0.85rem; opacity: 0.9; line-height: 1.6;">ระบบเชื่อมต่อโดยตรงกับเซนเซอร์ IoT และ API ของหน่วยงานผ่านโปรโตคอล SQL เพื่อดึงค่าปัจจุบันมาแสดงผลทุก 5 วินาที</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                            <h4 style="margin-bottom: 10px; color: #fff;"><i class="fa-solid fa-brain"></i> การวิเคราะห์ด้วย AI</h4>
+                            <p style="font-size: 0.85rem; opacity: 0.9; line-height: 1.6;">ข้อมูลดิบถูกส่งเข้าเครื่องยนต์ AI เพื่อวิเคราะห์หาแนวโน้ม (Trend) และทำนายล่วงหน้า ทำให้สามารถแจ้งเตือนเหตุการณ์สำคัญได้ทันที</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                            <h4 style="margin-bottom: 10px; color: #fff;"><i class="fa-solid fa-shield-halved"></i> ความแม่นยำและการตรวจสอบ</h4>
+                            <p style="font-size: 0.85rem; opacity: 0.9; line-height: 1.6;">มีการตรวจสอบความถูกต้องของข้อมูล (Validation) ก่อนบันทึกลงฐานข้อมูล SQL เพื่อให้มั่นใจว่าสถิติที่แสดงผลมีความน่าเชื่อถือสูงสุด</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div> <!-- End section-dashboard -->
+            
+            <div id="section-activities" style="display: none; padding: 2rem 0;">
+                <div style="margin-bottom: 2.5rem;">
+                    <h2 style="font-size: 2.5rem; color: var(--sc-primary); font-weight: 800; margin: 0;">ติดตามกิจกรรมเมือง</h2>
+                    <p style="color: var(--sc-text-neutral); border-left: 3px solid var(--sc-secondary); padding-left: 1rem; margin-top: 10px;">ระบบตรวจสอบความหนาแน่นและกิจกรรมเรียลไทม์</p>
+                </div>
+                
+                <div class="stat-grid" style="margin-bottom: 2rem;">
+                    <div class="stat-card glass-panel" style="border-top: 4px solid #8b5cf6;">
+                        <h3 style="margin-top: 0;">ความหนาแน่นเฉลี่ย (Real)</h3>
+                        <div class="value" id="avg-crowd-val" style="margin: 0; font-size: 3rem;">--%</div>
+                        <p style="color: var(--sc-text-neutral); font-size: 0.9rem;">คำนวณจากจุดตรวจวัดทั่วเมือง</p>
+                    </div>
+                    <div class="stat-card glass-panel" style="border-top: 4px solid #ec4899;">
+                        <h3 style="margin-top: 0;">สถานะระบบ Tracking</h3>
+                        <div class="value" style="margin: 0; font-size: 2rem; color: #10b981;">ONLINE</div>
+                        <p style="color: var(--sc-text-neutral); font-size: 0.9rem;"><i class="fa-solid fa-server"></i> เชื่อมต่อข้อมูลนครพนม</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel" style="margin-top: 2rem; padding: 2.5rem; border-left: 5px solid var(--sc-secondary); background: linear-gradient(to right, rgba(139, 92, 246, 0.05), transparent);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 2rem;">
+                        <div>
+                            <h3 style="font-size: 1.65rem; color: var(--sc-primary); font-weight: 800; display:flex; align-items:center; gap:12px; margin: 0;">
+                                <i class="fa-solid fa-brain" style="color: var(--sc-secondary);"></i>
+                                AI Predictive Intelligence - ระบบวิเคราะห์ความหนาแน่น
+                            </h3>
+                            <p style="color: var(--sc-text-neutral); margin-top: 8px; font-size: 1.1rem;">พยากรณ์ความหนาแน่นรายพื้นที่โดยอัตโนมัติจากข้อมูลเซ็นเซอร์และสถิติย้อนหลัง</p>
+                        </div>
+                        <div class="status-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 10px 20px; border-radius: 50px; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; animation: pulse-green 1.5s infinite;"></div>
+                            ระบบ AI ทำงานปกติ
+                        </div>
+                    </div>
+
+                    <div id="admin-crowd-list" class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+                        <!-- Injected by JS: fetchAdminCrowd() -->
+                        <div class="loading-placeholder">กำลังประมวลผลข้อมูลความหนาแน่นล่วงหน้า...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== SMART WASTE BIN MONITORING SECTION ===== -->
+            <div id="section-waste-bins" style="display: none; padding: 2rem 0;">
+                <div style="margin-bottom: 2.5rem;">
+                    <h2 style="font-size: 2.5rem; color: var(--sc-primary); font-weight: 800; margin: 0;">ระบบถังขยะอัจฉริยะ</h2>
+                    <p style="color: var(--sc-text-neutral); border-left: 3px solid var(--sc-secondary); padding-left: 1rem; margin-top: 10px;">ติดตามสถานะถังขยะ GPS + Ultrasonic จ.นครพนม</p>
+                </div>
+
+                <div class="stat-grid" style="margin-bottom: 2rem;">
+                    <div class="stat-card glass-panel" style="border-top: 4px solid #10b981;">
+                        <h3 style="margin-top: 0;"><i class="fa-solid fa-trash-can"></i> ถังทั้งหมด</h3>
+                        <div class="value" id="bins-total" style="margin: 0; font-size: 2.5rem; color: #10b981;">--</div>
+                    </div>
+                    <div class="stat-card glass-panel" style="border-top: 4px solid #3b82f6;">
+                        <h3 style="margin-top: 0;"><i class="fa-solid fa-truck-ramp-box"></i> ขยะวันนี้</h3>
+                        <div class="value" id="daily-waste-total" style="margin: 0; font-size: 2.5rem; color: #3b82f6;">-- ตัน</div>
+                    </div>
+                    <div class="stat-card glass-panel" style="border-top: 4px solid #ef4444;">
+                        <h3 style="margin-top: 0;"><i class="fa-solid fa-circle-exclamation"></i> เต็มแล้ว</h3>
+                        <div class="value" id="bins-full" style="margin: 0; font-size: 2.5rem; color: #ef4444;">--</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid map-traffic-grid" style="gap: 2rem; margin-bottom: 2rem;">
+                    <!-- ตำแหน่งถังขยะเรียลไทม์ -->
+                    <div class="glass-panel" style="padding: 0; overflow: hidden; min-height: 500px; display: flex; flex-direction: column;">
+                        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <h3 style="margin: 0; color: var(--sc-primary);"><i class="fa-solid fa-map-location-dot"></i> ตำแหน่งถังขยะเรียลไทม์</h3>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div id="gps-ws-status" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; background: rgba(239,68,68,0.1); color: #ef4444; padding: 4px 10px; border-radius: 50px; font-weight: 700;">
+                                    <div style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%;"></div> GPS ยังไม่เชื่อมต่อ
+                                </div>
+                            </div>
+                        </div>
+                        <div id="bins-map" style="flex: 1; min-height: 400px; width: 100%;"></div>
+                    </div>
+                    
+                    <!-- ทดสอบส่งข้อมูล Smart Bin อัตโนมัติ -->
+                    <div class="glass-panel" style="display: flex; flex-direction: column;">
+                        <h3 style="margin-bottom: 1.5rem; color: var(--sc-primary);"><i class="fa-solid fa-robot"></i> ระบบ AI อัตโนมัติ</h3>
+                        
+                        <!-- Status Display -->
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; color: white;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <i class="fa-solid fa-satellite-dish" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 1.1rem;">Smart Bin GPS Tracker</div>
+                                    <div style="font-size: 0.75rem; opacity: 0.9;">รับข้อมูลจาก ATGM336H-5N Module</div>
+                                </div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.8rem;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>📡 WebSocket:</span>
+                                    <span id="ws-connection-status" style="font-weight: 700;">กำลังเชื่อมต่อ...</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>🗑️ ถังที่ติดตาม:</span>
+                                    <span id="tracked-bins-count" style="font-weight: 700;">0 ถัง</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>📍 ตำแหน่งของคุณ:</span>
+                                    <span id="user-location-status" style="font-weight: 700;">กำลังดึง...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User Location Display -->
+                        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
+                            <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #0369a1; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-location-dot"></i> ตำแหน่ง GPS ของคุณ
+                            </h4>
+                            <div style="font-size: 0.75rem; color: #0c4a6e; line-height: 1.6;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Latitude:</span>
+                                    <span id="user-lat" style="font-weight: 700; font-family: monospace;">-</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Longitude:</span>
+                                    <span id="user-lng" style="font-weight: 700; font-family: monospace;">-</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>ความแม่นยำ:</span>
+                                    <span id="user-accuracy" style="font-weight: 700;">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Demo Controls -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
+                            <h4 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-flask"></i> ทดสอบระบบ
+                            </h4>
+                            
+                            <button onclick="showMyLocationOnMap()" style="
+                                width: 100%;
+                                padding: 12px 20px; border: none; border-radius: 10px;
+                                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                                color: #fff; font-size: 0.85rem; font-weight: 700;
+                                cursor: pointer; transition: all 0.3s;
+                                box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+                                display: flex; align-items: center; justify-content: center; gap: 8px;
+                                margin-bottom: 10px;
+                            " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                                <i class="fa-solid fa-location-crosshairs"></i> แสดงตำแหน่งของฉันบนแผนที่
+                            </button>
+
+                            <button onclick="loadSimulatorDemo()" style="
+                                width: 100%;
+                                padding: 12px 20px; border: none; border-radius: 10px;
+                                background: linear-gradient(135deg, #10b981, #059669);
+                                color: #fff; font-size: 0.85rem; font-weight: 700;
+                                cursor: pointer; transition: all 0.3s;
+                                box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+                                display: flex; align-items: center; justify-content: center; gap: 8px;
+                                margin-bottom: 10px;
+                            " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                                <i class="fa-solid fa-flask"></i> โหลดข้อมูล Demo (6 ถัง)
+                            </button>
+
+                            <button onclick="clearAllBins()" style="
+                                width: 100%;
+                                padding: 10px 20px; border: 1px solid #e2e8f0; border-radius: 10px;
+                                background: white; color: #64748b; font-size: 0.8rem; font-weight: 600;
+                                cursor: pointer; transition: all 0.3s;
+                                display: flex; align-items: center; justify-content: center; gap: 8px;
+                            " onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">
+                                <i class="fa-solid fa-trash"></i> ล้างข้อมูลทั้งหมด
+                            </button>
+                        </div>
+
+                        <!-- Live Updates Log -->
+                        <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; overflow-y: auto; max-height: 300px;">
+                            <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-list"></i> อัปเดตล่าสุด
+                            </h4>
+                            <div id="gps-updates-log" style="font-size: 0.7rem; color: #64748b; display: flex; flex-direction: column; gap: 5px;">
+                                <div style="text-align: center; padding: 2rem; opacity: 0.5;">
+                                    <i class="fa-solid fa-satellite-dish" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                                    รอข้อมูล GPS จาก Smart Bin...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fill Level Gauges by Type -->
+                <div class="chart-container glass-panel hover-lift" style="margin-top: 2rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="margin: 0; color: var(--text-main); font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-gauge-high" style="color: var(--secondary-color);"></i> ปริมาณขยะแต่ละถัง (Ultrasonic Sensor)
+                        </h3>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="bin-filter-btn active" onclick="filterBins('all')" data-filter="all" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.1); background: var(--primary-color); color: #fff; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.3s;">ทั้งหมด</button>
+                            <button class="bin-filter-btn" onclick="filterBins('plastic')" data-filter="plastic" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.1); background: transparent; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.3s;">พลาสติก</button>
+                            <button class="bin-filter-btn" onclick="filterBins('glass')" data-filter="glass" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.1); background: transparent; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.3s;">แก้ว</button>
+                            <button class="bin-filter-btn" onclick="filterBins('paper')" data-filter="paper" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.1); background: transparent; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.3s;">กระดาษ</button>
+                            <button class="bin-filter-btn" onclick="filterBins('can')" data-filter="can" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.1); background: transparent; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.3s;">กระป๋อง</button>
+                        </div>
+                    </div>
+                    <div id="bins-gauge-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; padding: 0.5rem 0;">
+                        <div class="loading-state">กำลังโหลดข้อมูลเซ็นเซอร์...</div>
+                    </div>
+                </div>
+
+                <!-- IoT Sensor Input Panel -->
+                <div class="chart-container glass-panel hover-lift" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="margin: 0; color: var(--text-main); font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-microchip" style="color: #6366f1;"></i> IoT Sensor Input (Manual & Auto)
+                        </h3>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span style="font-size: 0.7rem; color: var(--text-muted); background: rgba(99,102,241,0.08); padding: 4px 10px; border-radius: 10px;">
+                                <i class="fa-solid fa-info-circle"></i> กรอกข้อมูลจากเซ็นเซอร์จริงของคุณ
+                            </span>
+                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.04); padding: 5px 12px; border-radius: 50px;">
+                                <label for="auto-sensor-toggle" style="font-size: 0.8rem; font-weight: 600; cursor: pointer;">AI Auto Submit (ทดสอบอัตโนมัติ)</label>
+                                <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                                    <input type="checkbox" id="auto-sensor-toggle" onchange="toggleAutoSubmit()" style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; border-radius: 24px; transition: .4s;" id="auto-slider-bg">
+                                        <span style="position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: .4s;" id="auto-slider-btn"></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GPS Modules x4 -->
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-satellite-dish" style="color: #10b981;"></i> GPS Module ATGM336H-5N (4 ตัว)
+                        </h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                            <div class="iot-input-card" style="background: linear-gradient(145deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 14px; padding: 1.2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-weight: 700; color: #059669; font-size: 0.85rem;"><i class="fa-solid fa-location-dot"></i> GPS #1</span>
+                                    <span class="gps-status" id="gps-status-1" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Latitude</label>
+                                        <input type="text" id="gps-lat-1" placeholder="เช่น 17.404396" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Longitude</label>
+                                        <input type="text" id="gps-lng-1" placeholder="เช่น 104.793134" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 6px; font-size: 0.6rem; color: #94a3b8;">Module: ATGM336H-5N | Bin ID: <input type="text" id="gps-binid-1" placeholder="BIN ID" style="width: 60px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.6rem; outline: none;"></div>
+                            </div>
+
+                            <div class="iot-input-card" style="background: linear-gradient(145deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 14px; padding: 1.2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-weight: 700; color: #059669; font-size: 0.85rem;"><i class="fa-solid fa-location-dot"></i> GPS #2</span>
+                                    <span class="gps-status" id="gps-status-2" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Latitude</label>
+                                        <input type="text" id="gps-lat-2" placeholder="เช่น 17.405200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Longitude</label>
+                                        <input type="text" id="gps-lng-2" placeholder="เช่น 104.789800" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 6px; font-size: 0.6rem; color: #94a3b8;">Module: ATGM336H-5N | Bin ID: <input type="text" id="gps-binid-2" placeholder="BIN ID" style="width: 60px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.6rem; outline: none;"></div>
+                            </div>
+
+                            <div class="iot-input-card" style="background: linear-gradient(145deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 14px; padding: 1.2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-weight: 700; color: #059669; font-size: 0.85rem;"><i class="fa-solid fa-location-dot"></i> GPS #3</span>
+                                    <span class="gps-status" id="gps-status-3" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Latitude</label>
+                                        <input type="text" id="gps-lat-3" placeholder="เช่น 17.408100" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Longitude</label>
+                                        <input type="text" id="gps-lng-3" placeholder="เช่น 104.785500" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 6px; font-size: 0.6rem; color: #94a3b8;">Module: ATGM336H-5N | Bin ID: <input type="text" id="gps-binid-3" placeholder="BIN ID" style="width: 60px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.6rem; outline: none;"></div>
+                            </div>
+
+                            <div class="iot-input-card" style="background: linear-gradient(145deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 14px; padding: 1.2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-weight: 700; color: #059669; font-size: 0.85rem;"><i class="fa-solid fa-location-dot"></i> GPS #4</span>
+                                    <span class="gps-status" id="gps-status-4" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Latitude</label>
+                                        <input type="text" id="gps-lat-4" placeholder="เช่น 17.399500" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Longitude</label>
+                                        <input type="text" id="gps-lng-4" placeholder="เช่น 104.784200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 6px; font-size: 0.6rem; color: #94a3b8;">Module: ATGM336H-5N | Bin ID: <input type="text" id="gps-binid-4" placeholder="BIN ID" style="width: 60px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.6rem; outline: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ultrasonic Sensors x4 -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-wave-square" style="color: #6366f1;"></i> Ultrasonic Sensor (4 ตัว) — แจ้งปริมาณขยะ
+                        </h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                            <div class="iot-input-card" style="background: linear-gradient(145deg, #eef2ff, #e0e7ff); border: 1px solid #c7d2fe; border-radius: 14px; padding: 1.2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-weight: 700; color: #4f46e5; font-size: 0.85rem;"><i class="fa-solid fa-ruler-vertical"></i> Ultrasonic #1</span>
+                                    <span id="us-status-1" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">ระยะทาง (cm)</label>
+                                        <input type="number" id="us-distance-1" placeholder="เช่น 20" min="0" max="200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">ความสูงถัง (cm)</label>
+                                        <input type="number" id="us-height-1" placeholder="เช่น 80" value="80" min="10" max="200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 8px;">
+                                    <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Bin ID (เชื่อมกับถัง)</label>
+                                    <input type="text" id="us-binid-1" placeholder="เช่น 1 หรือ BIN-NKP-001" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                </div>
+                                <div id="us-fill-preview-1" style="margin-top: 8px; font-size: 0.75rem; color: #64748b;"></div>
+                            </div>
+
+                            <div class="iot-input-card" style="background: linear-gradient(145deg, #eef2ff, #e0e7ff); border: 1px solid #c7d2fe; border-radius: 14px; padding: 1.2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-weight: 700; color: #4f46e5; font-size: 0.85rem;"><i class="fa-solid fa-ruler-vertical"></i> Ultrasonic #2</span>
+                                    <span id="us-status-2" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">ระยะทาง (cm)</label>
+                                        <input type="number" id="us-distance-2" placeholder="เช่น 40" min="0" max="200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">ความสูงถัง (cm)</label>
+                                        <input type="number" id="us-height-2" placeholder="เช่น 80" value="80" min="10" max="200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 8px;">
+                                    <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Bin ID (เชื่อมกับถัง)</label>
+                                    <input type="text" id="us-binid-2" placeholder="เช่น 2 หรือ BIN-NKP-002" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                </div>
+                                <div id="us-fill-preview-2" style="margin-top: 8px; font-size: 0.75rem; color: #64748b;"></div>
+                            </div>
+
+                            <div class="iot-input-card" style="background: linear-gradient(145deg, #eef2ff, #e0e7ff); border: 1px solid #c7d2fe; border-radius: 14px; padding: 1.2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-weight: 700; color: #4f46e5; font-size: 0.85rem;"><i class="fa-solid fa-ruler-vertical"></i> Ultrasonic #3</span>
+                                    <span id="us-status-3" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">ระยะทาง (cm)</label>
+                                        <input type="number" id="us-distance-3" placeholder="เช่น 60" min="0" max="200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">ความสูงถัง (cm)</label>
+                                        <input type="number" id="us-height-3" placeholder="เช่น 80" value="80" min="10" max="200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 8px;">
+                                    <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Bin ID (เชื่อมกับถัง)</label>
+                                    <input type="text" id="us-binid-3" placeholder="เช่น 3 หรือ BIN-NKP-003" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                </div>
+                                <div id="us-fill-preview-3" style="margin-top: 8px; font-size: 0.75rem; color: #64748b;"></div>
+                            </div>
+
+                            <div class="iot-input-card" style="background: linear-gradient(145deg, #eef2ff, #e0e7ff); border: 1px solid #c7d2fe; border-radius: 14px; padding: 1.2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-weight: 700; color: #4f46e5; font-size: 0.85rem;"><i class="fa-solid fa-ruler-vertical"></i> Ultrasonic #4</span>
+                                    <span id="us-status-4" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">ระยะทาง (cm)</label>
+                                        <input type="number" id="us-distance-4" placeholder="เช่น 10" min="0" max="200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">ความสูงถัง (cm)</label>
+                                        <input type="number" id="us-height-4" placeholder="เช่น 80" value="80" min="10" max="200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 8px;">
+                                    <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Bin ID (เชื่อมกับถัง)</label>
+                                    <input type="text" id="us-binid-4" placeholder="เช่น 4 หรือ BIN-NKP-004" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'">
+                                </div>
+                                <div id="us-fill-preview-4" style="margin-top: 8px; font-size: 0.75rem; color: #64748b;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                        <button onclick="submitSensorData()" style="
+                            padding: 12px 30px; border: none; border-radius: 12px;
+                            background: linear-gradient(135deg, #6366f1, #4f46e5);
+                            color: #fff; font-size: 0.9rem; font-weight: 700;
+                            cursor: pointer; transition: all 0.3s;
+                            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+                            display: flex; align-items: center; gap: 8px;
+                        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 25px rgba(99,102,241,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 15px rgba(99,102,241,0.3)'">
+                            <i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลเซ็นเซอร์
+                        </button>
+                        <button onclick="clearSensorInputs()" style="
+                            padding: 12px 24px; border: 1px solid #d1d5db; border-radius: 12px;
+                            background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600;
+                            cursor: pointer; transition: 0.3s;
+                        " onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#d1d5db';this.style.color='var(--text-muted)'">
+                            <i class="fa-solid fa-eraser"></i> ล้างข้อมูล
+                        </button>
+                    </div>
+                    <div id="sensor-submit-result" style="margin-top: 1rem; text-align: center; font-size: 0.8rem;"></div>
+                </div>
+
+                <!-- LINE Notification Panel -->
+                <div class="chart-container glass-panel hover-lift" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="margin: 0; color: var(--text-main); font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-brands fa-line" style="color: #06c755; font-size: 1.4rem;"></i> LINE Chatbot Notifications
+                        </h3>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div id="line-status-badge" style="background: rgba(6, 199, 85, 0.1); color: #06c755; padding: 5px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                                <div style="width: 6px; height: 6px; background: #06c755; border-radius: 50%; animation: pulse-green 1.5s infinite;"></div> MONITORING
+                            </div>
+                        </div>
+                    </div>
+                    <div id="bins-notifications-list" style="display: flex; flex-direction: column; gap: 0.8rem; max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-bell-slash" style="font-size: 2rem; opacity: 0.3; margin-bottom: 10px; display: block;"></i>
+                            ยังไม่มีการแจ้งเตือน ระบบจะแจ้งเตือนอัตโนมัติเมื่อถังขยะเต็มหรือใกล้เต็ม
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <style>
+        .leaflet-routing-container { display: none !important; }
+        .manual-pin-start i, .manual-pin-end i { filter: drop-shadow(0 0 5px rgba(255,255,255,0.8)); }
+    </style>
+
+    <script src="js/admin-auth.js"></script>
+    <script>
+        // ===== Weather Functions =====
+        async function fetchWeatherAdmin() {
+            const grid = document.getElementById('admin-weather-areas-grid');
+            if (!grid) return;
+            try {
+                const res = await fetch('/api/weather/areas');
+                const data = await res.json();
+                grid.innerHTML = data.map(area => {
+                    const temp = area.temp !== undefined ? Math.round(area.temp) : '--';
+                    const isReal = area.isReal !== false;
+                    return `
+                        <div class="weather-card">
+                            <div class="weather-card-info">
+                                <div class="weather-main">
+                                    <div class="weather-main-header">
+                                        <i class="fa-solid ${area.icon_base || 'fa-cloud-sun'} icon-lg"></i>
+                                        <h4>${area.name}</h4>
+                                    </div>
+                                    <div class="weather-metrics">
+                                        <span><i class="fa-solid fa-droplet" style="color:#3b82f6;"></i> ${area.humidity || '--'}%</span>
+                                        <span><i class="fa-solid fa-wind"></i> ${area.wind_speed ? area.wind_speed.toFixed(1) : '--'} m/s</span>
+                                    </div>
+                                    ${isReal ? '<span style="font-size:0.65rem;color:#10b981;font-weight:700;margin-top:4px;"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> เรียลไทม์</span>' : ''}
+                                </div>
+                                <div class="temp">${temp}°</div>
+                            </div>
+                            <div class="weather-details" style="margin-top:10px;">
+                                <span class="weather-desc">${area.description || 'Clear'}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                if (grid) grid.innerHTML = '<p style="color:var(--text-muted);padding:1rem;">ไม่สามารถดึงข้อมูลอากาศได้</p>';
+                console.error('Weather admin fetch error:', e);
+            }
+        }
+
+        async function fetchForecastAdmin() {
+            const forecastEl = document.getElementById('admin-weather-forecast');
+            if (!forecastEl) return;
+            try {
+                const res = await fetch('/api/weather/forecast');
+                const data = await res.json();
+                if (!data.list || data.list.length === 0) return;
+                const days = ['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+                forecastEl.innerHTML = data.list.map(day => {
+                    const d = new Date(day.dt * 1000);
+                    return `
+                        <div style="min-width:110px;background:rgba(255,255,255,0.7);border-radius:14px;padding:12px;text-align:center;border:1px solid rgba(0,0,0,0.05);flex-shrink:0;">
+                            <div style="font-size:0.8rem;font-weight:700;color:var(--text-main);">${days[d.getDay()]}</div>
+                            <img src="https://openweathermap.org/img/wn/${day.icon}@2x.png" style="width:48px;height:48px;object-fit:contain;" alt="">
+                            <div style="font-size:1.4rem;font-weight:800;color:var(--sc-secondary);">${Math.round(day.temp)}°</div>
+                            <div style="font-size:0.65rem;color:var(--text-muted);margin-top:4px;">${day.humidity}% <i class="fa-solid fa-droplet" style="color:#3b82f6;"></i></div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) { console.warn('Forecast admin error:', e); }
+        }
+
+        async function initDashboard() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const section = urlParams.get('section');
+            if (section === 'activities') {
+                showAdminSection('activities');
+            } else if (section === 'waste-bins') {
+                showAdminSection('waste-bins');
+            } else {
+                showAdminSection('overview');
+            }
+
+            try {
+                const configRes = await fetch('/api/stats/config');
+                const config = await configRes.json();
+                if (config.longdoKey) {
+                    document.getElementById('admin-map').setAttribute('data-key', config.longdoKey);
+                    if (window.initTrafficLayer) window.initTrafficLayer(config.longdoKey);
+                }
+
+                // Load Google Maps dynamically if key is available
+                if (config.googleMapsKey && config.googleMapsKey !== 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
+                    const script = document.createElement('script');
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${config.googleMapsKey}&libraries=places&callback=initAdminGoogleMap`;
+                    script.async = true;
+                    script.defer = true;
+                    // Before Google Maps loads, destroy Leaflet to free the container
+                    script.onload = function() {
+                        if (window._leafletAdminMap) {
+                            window._leafletAdminMap.remove();
+                            window._leafletAdminMap = null;
+                        }
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    // Fallback: use OpenStreetMap via Leaflet (already loaded via admin-map.js)
+                    console.warn('Google Maps key not set, using Leaflet fallback');
+                    setTimeout(() => {
+                        if (window._leafletAdminMap) window._leafletAdminMap.invalidateSize();
+                    }, 500);
+                }
+            } catch (e) { console.warn('Config fetch error'); }
+
+            try {
+                const pmRes = await fetch('/api/pm25');
+                const pmData = await pmRes.json();
+                if (!pmData.error) {
+                    document.getElementById('pm25-val').innerHTML = `${pmData.current.pm25} <span style="font-size: 0.9rem; font-weight: 400;">AQI</span>`;
+                    document.getElementById('pm25-val').style.color = pmData.current.color;
+                    document.getElementById('pm25-status').innerHTML = `<i class="fa-solid fa-wind" style="color: ${pmData.current.color}"></i> ระดับ: ${pmData.current.status}`;
+                }
+            } catch (e) { console.error('PM25 Fetch error'); }
+
+            try {
+                const statsRes = await fetch('/api/stats/weekly-tourists');
+                const statsData = await statsRes.json();
+                renderVisitorChart(statsData);
+            } catch (e) { console.error('Stats Fetch error'); }
+
+            try {
+                const trafficRes = await fetch('/api/traffic/status');
+                const trafficData = await trafficRes.json();
+                renderTrafficList(trafficData);
+            } catch (e) { console.error('Traffic Fetch error'); }
+
+            try {
+                const forecastRes = await fetch('/api/traffic/forecast');
+                const forecastData = await forecastRes.json();
+                renderTrafficForecast(forecastData);
+            } catch (e) { console.error('Forecast Fetch error'); }
+
+            try {
+                const summaryRes = await fetch('/api/stats/dashboard-summary');
+                const summaryData = await summaryRes.json();
+                document.getElementById('visitors-today-val').innerText = summaryData.visitorsToday.toLocaleString();
+                document.getElementById('ai-requests-val').innerText = summaryData.aiRequests.toLocaleString();
+                document.getElementById('top-place-name').innerText = summaryData.topPlace.name;
+                document.getElementById('top-place-count').innerText = `${summaryData.topPlace.count.toLocaleString()} ครั้ง / วัน`;
+            } catch (e) { console.error('Summary Fetch error'); }
+
+            updateClock();
+            setInterval(updateClock, 1000);
+            fetchAdminCrowd();
+            setInterval(fetchAdminCrowd, 10000);
+
+            // New Enhanced Stats initialization
+            fetchWeatherAdmin();
+            fetchForecastAdmin();
+            loadStatSparklines();
+            
+            setInterval(fetchWeatherAdmin, 300000); // 5 mins
+            setInterval(loadStatSparklines, 300000);
+        }
+
+        async function loadStatSparklines() {
+            // Render basic sparklines for the 3 main metrics
+            renderGenericSparkline('sparkline-visitors', '/api/stats/history/visitors', '#3b82f6');
+            renderGenericSparkline('sparkline-pm25', '/api/pm25/history', '#ef4444');
+            renderGenericSparkline('sparkline-ai', '/api/stats/history/ai-requests', '#8b5cf6');
+        }
+
+        async function renderGenericSparkline(canvasId, endpoint, color) {
+            try {
+                const res = await fetch(endpoint);
+                const history = await res.json();
+                const ctx = document.getElementById(canvasId);
+                if (!ctx || history.length < 2) return;
+
+                const values = history.map(h => h.value);
+                const labels = values.map((_, i) => i);
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            borderColor: color,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: true,
+                            backgroundColor: `${color}11`,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        scales: { x: { display: false }, y: { display: false } }
+                    }
+                });
+            } catch (e) { console.warn(`Error rendering ${canvasId}`, e); }
+        }
+
+
+        function showAdminSection(sectionId) {
+            const overview = document.getElementById('section-dashboard');
+            const activities = document.getElementById('section-activities');
+            const wasteBins = document.getElementById('section-waste-bins');
+            if (overview) overview.style.display = sectionId === 'overview' ? 'block' : 'none';
+            if (activities) activities.style.display = sectionId === 'activities' ? 'block' : 'none';
+            if (wasteBins) wasteBins.style.display = sectionId === 'waste-bins' ? 'block' : 'none';
+            
+            const title = document.getElementById('admin-main-title');
+            const sub = document.getElementById('admin-sub-title');
+            
+            if (sectionId === 'overview') {
+                if (title) title.innerText = 'ศูนย์บัญชาการหลัก';
+                if (sub) sub.innerText = 'ระบบจัดการอัจฉริยะแบบเบ็ดเสร็จ จังหวัดนครพนม';
+            } else if (sectionId === 'waste-bins') {
+                if (title) title.innerText = 'ระบบถังขยะอัจฉริยะ (Smart Bins)';
+                if (sub) sub.innerText = 'ระบบติดตามถังขยะอัจฉริยะ GPS + Ultrasonic จ.นครพนม';
+                initWasteBinsDashboard();
+            } else if (sectionId === 'activities') {
+                if (title) title.innerText = 'ติดตามกิจกรรมเมือง';
+                if (sub) sub.innerText = 'แผงจัดการกิจกรรมและความหนาแน่นรายพื้นที่';
+                fetchAdminCrowd();
+            }
+
+            const navOverview = document.getElementById('nav-overview');
+            const navActivities = document.getElementById('nav-activities');
+            const navWasteBins = document.getElementById('nav-waste-bins');
+            if (navOverview) navOverview.classList.toggle('active', sectionId === 'overview');
+            if (navActivities) navActivities.classList.toggle('active', sectionId === 'activities');
+            if (navWasteBins) navWasteBins.classList.toggle('active', sectionId === 'waste-bins');
+            
+            if (window.innerWidth <= 900) toggleAdminMenu();
+        }
+
+        // ===== SMART WASTE BIN DASHBOARD =====
+        let binsData = [];
+        let binsMap = null;
+        let binsMarkers = [];
+        let binsCategoryChart = null;
+        let currentBinsFilter = 'all';
+
+        async function initWasteBinsDashboard() {
+            await fetchBinsData();
+            await fetchBinsNotifications();
+            // Auto-refresh every 15 seconds
+            if (!window.binsRefreshInterval) {
+                window.binsRefreshInterval = setInterval(async () => {
+                    if (document.getElementById('section-waste-bins').style.display !== 'none') {
+                        await fetchBinsData();
+                    }
+                }, 15000);
+            }
+        }
+
+        async function fetchBinsData() {
+            try {
+                const [binsRes, statsRes, wasteRes] = await Promise.all([
+                    fetch('/api/bins'),
+                    fetch('/api/bins/stats'),
+                    fetch('/api/city/waste') // Get real PCD waste collected data
+                ]);
+                binsData = await binsRes.json();
+                const stats = await statsRes.json();
+                let dailyWasteText = "--";
+                try {
+                    const wasteData = await wasteRes.json();
+                    if (wasteData.summary && wasteData.summary.wasteGeneratedPerDay) {
+                        dailyWasteText = wasteData.summary.wasteGeneratedPerDay;
+                    }
+                } catch(e) {}
+
+                // Update stat cards
+                document.getElementById('bins-total').innerText = stats.total;
+                document.getElementById('bins-full').innerText = stats.full;
+                document.getElementById('bins-almost').innerText = stats.almostFull;
+                if (document.getElementById('daily-waste-total')) document.getElementById('daily-waste-total').innerText = `${dailyWasteText} ตัน`;
+                document.getElementById('bins-empty').innerText = stats.empty;
+
+                // Render all components
+                renderBinsMap(binsData);
+                renderBinsGauges(binsData, currentBinsFilter);
+                renderBinsCategoryChart(stats);
+            } catch (e) {
+                console.error('Bins fetch error:', e);
+            }
+        }
+
+        function renderBinsMap(bins) {
+            const mapEl = document.getElementById('bins-map');
+            if (!mapEl) return;
+
+            if (!binsMap) {
+                binsMap = L.map('bins-map', { 
+                    zoomControl: true,
+                    scrollWheelZoom: true
+                }).setView([17.404, 104.789], 14);
+                
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; OpenStreetMap & CartoDB',
+                    maxZoom: 19
+                }).addTo(binsMap);
+
+                // Fix map resize when tab becomes visible
+                setTimeout(() => binsMap.invalidateSize(), 300);
+            }
+
+            // Clear existing markers
+            binsMarkers.forEach(m => binsMap.removeLayer(m));
+            binsMarkers = [];
+
+            bins.forEach(bin => {
+                const color = bin.fillColor || (bin.status === 'full' ? '#ef4444' : bin.status === 'almost_full' ? '#f59e0b' : bin.status === 'empty' ? '#94a3b8' : '#10b981');
+                const typeLabel = bin.typeLabel || bin.bin_type;
+                const statusLabel = bin.statusLabel || bin.status;
+                
+                const icon = L.divIcon({
+                    className: 'bin-map-marker',
+                    html: `<div style="
+                        width: 32px; height: 32px; border-radius: 50%; 
+                        background: ${color}; border: 3px solid #fff;
+                        box-shadow: 0 3px 12px ${color}66;
+                        display: flex; align-items: center; justify-content: center;
+                        color: #fff; font-size: 0.7rem; font-weight: 800;
+                    ">${bin.fill_level}%</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+
+                const marker = L.marker([bin.lat, bin.lng], { icon })
+                    .bindPopup(`
+                        <div style="font-family: 'Anuphan', sans-serif; min-width: 200px;">
+                            <div style="font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: ${color};">
+                                <i class="fa-solid fa-trash-can"></i> ${bin.bin_name}
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.8rem;">
+                                <span style="color: #64748b;">ประเภท:</span><span style="font-weight: 600;">${typeLabel}</span>
+                                <span style="color: #64748b;">ปริมาณ:</span><span style="font-weight: 700; color: ${color};">${bin.fill_level}%</span>
+                                <span style="color: #64748b;">สถานะ:</span><span style="font-weight: 600; color: ${color};">${statusLabel}</span>
+                                <span style="color: #64748b;">ตำแหน่ง:</span><span style="font-weight: 500;">${bin.location_name || '-'}</span>
+                            </div>
+                            <div style="margin-top: 8px; font-size: 0.65rem; color: #94a3b8;">
+                                GPS: ${bin.lat}, ${bin.lng} (${bin.gps_module || 'ATGM336H-5N'})
+                            </div>
+                            <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 8px; overflow: hidden;">
+                                <div style="width: ${bin.fill_level}%; height: 100%; background: ${color}; border-radius: 3px; transition: width 0.5s;"></div>
+                            </div>
+                        </div>
+                    `)
+                    .addTo(binsMap);
+                
+                binsMarkers.push(marker);
+            });
+
+            setTimeout(() => binsMap.invalidateSize(), 100);
+        }
+
+        function renderBinsGauges(bins, filter) {
+            const grid = document.getElementById('bins-gauge-grid');
+            if (!grid) return;
+
+            const filtered = filter === 'all' ? bins : bins.filter(b => b.bin_type === filter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="loading-state" style="grid-column: 1 / -1; min-height: 150px; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--text-muted);"><i class="fa-solid fa-satellite-dish" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i> รอการเชื่อมต่อเซ็นเซอร์จริงเข้าสู่ระบบ...</div>';
+                return;
+            }
+
+            const typeIcons = {
+                plastic: 'fa-bottle-water',
+                glass: 'fa-wine-glass',
+                paper: 'fa-newspaper',
+                can: 'fa-can-food'
+            };
+
+            grid.innerHTML = filtered.map(bin => {
+                const color = bin.fillColor || (bin.status === 'full' ? '#ef4444' : bin.status === 'almost_full' ? '#f59e0b' : bin.status === 'empty' ? '#94a3b8' : '#10b981');
+                const typeLabel = bin.typeLabel || bin.bin_type;
+                let statusLabel = bin.statusLabel || bin.status;
+                
+                // Explicitly format "ถัง[ประเภท]เต็ม"
+                if (statusLabel === 'เต็ม' || statusLabel === 'Full') statusLabel = `ถัง${typeLabel}เต็ม`;
+                else if (statusLabel === 'ใกล้เต็ม' || statusLabel === 'Almost Full') statusLabel = `ถัง${typeLabel}ใกล้เต็ม`;
+                
+                const icon = typeIcons[bin.bin_type] || 'fa-trash-can';
+                const fillHeight = bin.fill_level;
+                
+                return `
+                    <div style="
+                        background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(255,255,255,0.7));
+                        border: 1px solid rgba(255,255,255,0.8);
+                        border-radius: 16px;
+                        padding: 1rem;
+                        text-align: center;
+                        box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+                        transition: all 0.3s;
+                        cursor: default;
+                    " onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 30px rgba(0,0,0,0.06)'" onmouseout="this.style.transform='';this.style.boxShadow='0 8px 20px rgba(0,0,0,0.03)'">
+                        <!-- Bin Type Icon -->
+                        <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                            <i class="fa-solid ${icon}" style="color: ${color};"></i> ${typeLabel}
+                        </div>
+                        
+                        <!-- Tube Gauge -->
+                        <div style="
+                            width: 40px; height: 100px; margin: 0 auto 10px;
+                            background: #f1f5f9; border-radius: 20px;
+                            position: relative; overflow: hidden;
+                            border: 2px solid #e2e8f0;
+                        ">
+                            <div style="
+                                position: absolute; bottom: 0; width: 100%;
+                                height: ${fillHeight}%;
+                                background: linear-gradient(to top, ${color}, ${color}cc);
+                                border-radius: 0 0 18px 18px;
+                                transition: height 1s cubic-bezier(0.1, 0.8, 0.2, 1);
+                            "></div>
+                            <!-- Level markers -->
+                            <div style="position: absolute; top: 25%; width: 100%; border-top: 1px dashed rgba(0,0,0,0.08);"></div>
+                            <div style="position: absolute; top: 50%; width: 100%; border-top: 1px dashed rgba(0,0,0,0.08);"></div>
+                            <div style="position: absolute; top: 75%; width: 100%; border-top: 1px dashed rgba(0,0,0,0.08);"></div>
+                        </div>
+                        
+                        <!-- Value -->
+                        <div style="font-size: 1.4rem; font-weight: 800; color: ${color}; line-height: 1;">${bin.fill_level}%</div>
+                        
+                        <!-- Name & Location -->
+                        <div style="font-size: 0.7rem; color: var(--text-main); font-weight: 600; margin-top: 5px;">${bin.bin_name}</div>
+                        <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 2px;">${bin.location_name || ''}</div>
+                        
+                        <!-- Status Badge -->
+                        <div style="
+                            margin-top: 8px;
+                            font-size: 0.6rem; font-weight: 700;
+                            color: ${color}; background: ${color}15;
+                            padding: 3px 8px; border-radius: 10px;
+                            display: inline-block;
+                        ">${statusLabel}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterBins(type) {
+            currentBinsFilter = type;
+            // Update filter button styles
+            document.querySelectorAll('.bin-filter-btn').forEach(btn => {
+                if (btn.dataset.filter === type) {
+                    btn.style.background = 'var(--primary-color)';
+                    btn.style.color = '#fff';
+                    btn.classList.add('active');
+                } else {
+                    btn.style.background = 'transparent';
+                    btn.style.color = 'var(--text-muted)';
+                    btn.classList.remove('active');
+                }
+            });
+            renderBinsGauges(binsData, type);
+        }
+
+        function renderBinsCategoryChart(stats) {
+            const ctx = document.getElementById('binsCategoryChart');
+            if (!ctx) return;
+
+            if (binsCategoryChart) binsCategoryChart.destroy();
+
+            const typeColors = {
+                plastic: '#3b82f6',
+                glass: '#8b5cf6',
+                paper: '#f59e0b',
+                can: '#ef4444'
+            };
+            const typeLabels = {
+                plastic: 'พลาสติก',
+                glass: 'แก้ว',
+                paper: 'กระดาษ',
+                can: 'กระป๋อง'
+            };
+
+            const labels = Object.keys(stats.byType).map(k => typeLabels[k]);
+            const data = Object.keys(stats.byType).map(k => stats.byType[k].avgFill);
+            const colors = Object.keys(stats.byType).map(k => typeColors[k]);
+
+            binsCategoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        hoverOffset: 12
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 15, usePointStyle: true, pointStyle: 'circle', font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+
+            // Legend with counts
+            const legendEl = document.getElementById('bins-category-legend');
+            if (legendEl) {
+                legendEl.innerHTML = Object.keys(stats.byType).map(k => {
+                    const t = stats.byType[k];
+                    return `
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; background: ${typeColors[k]}10; padding: 4px 10px; border-radius: 8px; border: 1px solid ${typeColors[k]}22;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${typeColors[k]};"></div>
+                            <span style="font-weight: 600; color: var(--text-main);">${typeLabels[k]}</span>
+                            <span style="color: var(--text-muted);">${t.count} ถัง</span>
+                            <span style="font-weight: 700; color: ${typeColors[k]};">${t.avgFill}%</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        async function fetchBinsNotifications() {
+            try {
+                const res = await fetch('/api/bins/notifications');
+                const notifications = await res.json();
+                const container = document.getElementById('bins-notifications-list');
+                if (!container) return;
+
+                if (notifications.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-bell-slash" style="font-size: 2rem; opacity: 0.3; margin-bottom: 10px; display: block;"></i>
+                            ยังไม่มีการแจ้งเตือน ระบบจะแจ้งเตือนอัตโนมัติเมื่อถังขยะเต็มหรือใกล้เต็ม
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = notifications.map(n => {
+                    const icon = n.notification_type === 'full' ? 'fa-circle-exclamation' : 'fa-triangle-exclamation';
+                    const color = n.notification_type === 'full' ? '#ef4444' : '#f59e0b';
+                    const bgColor = n.notification_type === 'full' ? '#fff1f2' : '#fffbeb';
+                    const time = new Date(n.sent_at).toLocaleString('th-TH');
+                    
+                    return `
+                        <div style="padding: 1rem; border-radius: 12px; background: ${bgColor}; border: 1px solid ${color}22; display: flex; align-items: flex-start; gap: 12px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: ${color}15; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fa-solid ${icon}" style="color: ${color}; font-size: 1rem;"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-main); margin-bottom: 3px;">${n.bin_name || 'ถังขยะ'} — ${n.location_name || ''}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">${n.message || ''}</div>
+                                <div style="font-size: 0.65rem; color: ${color}; margin-top: 5px; display: flex; align-items: center; gap: 4px;">
+                                    <i class="fa-brands fa-line"></i> ${time} · ${n.sent_via || 'LINE'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.warn('Bins notifications fetch error:', e);
+            }
+        }
+
+        // Submit IoT sensor data (GPS + Ultrasonic)
+        async function submitSensorData() {
+            const resultEl = document.getElementById('sensor-submit-result');
+            resultEl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" style="color: #6366f1;"></i> กำลังส่งข้อมูล...';
+            let successCount = 0;
+            let errorCount = 0;
+
+            // Process Ultrasonic sensors (they include the bin_id + distance which is the core update)
+            for (let i = 1; i <= 4; i++) {
+                const distanceEl = document.getElementById(`us-distance-${i}`);
+                const heightEl = document.getElementById(`us-height-${i}`);
+                const binIdEl = document.getElementById(`us-binid-${i}`);
+                
+                const distance = distanceEl ? distanceEl.value.trim() : '';
+                const height = heightEl ? heightEl.value.trim() : '';
+                const binId = binIdEl ? binIdEl.value.trim() : '';
+                
+                if (!distance || !binId) continue; // Skip empty slots
+
+                // Also check for matching GPS data
+                const lat = document.getElementById(`gps-lat-${i}`)?.value.trim() || '';
+                const lng = document.getElementById(`gps-lng-${i}`)?.value.trim() || '';
+
+                try {
+                    const body = {
+                        bin_id: parseInt(binId) || binId,
+                        ultrasonic_distance_cm: parseInt(distance),
+                    };
+                    if (lat && lng) {
+                        body.lat = parseFloat(lat);
+                        body.lng = parseFloat(lng);
+                    }
+
+                    const res = await fetch('/api/bins/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        successCount++;
+                        // Update status badges
+                        const usStatus = document.getElementById(`us-status-${i}`);
+                        if (usStatus) {
+                            usStatus.textContent = `${data.fill_level}% ${data.statusLabel}`;
+                            usStatus.style.background = data.status === 'full' ? '#fef2f2' : data.status === 'almost_full' ? '#fffbeb' : '#f0fdf4';
+                            usStatus.style.color = data.status === 'full' ? '#ef4444' : data.status === 'almost_full' ? '#f59e0b' : '#10b981';
+                        }
+                        const gpsStatus = document.getElementById(`gps-status-${i}`);
+                        if (gpsStatus && lat && lng) {
+                            gpsStatus.textContent = 'CONNECTED';
+                            gpsStatus.style.background = '#f0fdf4';
+                            gpsStatus.style.color = '#10b981';
+                        }
+                        // Show fill preview
+                        const preview = document.getElementById(`us-fill-preview-${i}`);
+                        if (preview) {
+                            preview.innerHTML = `<span style="color: ${data.status === 'full' ? '#ef4444' : '#10b981'}; font-weight: 700;">ระดับขยะ: ${data.fill_level}% — ${data.statusLabel}</span>`;
+                        }
+                    } else {
+                        errorCount++;
+                    }
+                } catch (e) {
+                    errorCount++;
+                    console.error(`Sensor ${i} submit error:`, e);
+                }
+            }
+
+            if (successCount > 0) {
+                resultEl.innerHTML = `<span style="color: #10b981; font-weight: 600;"><i class="fa-solid fa-check-circle"></i> ส่งข้อมูลสำเร็จ ${successCount} ชุด</span>${errorCount > 0 ? ` <span style="color: #ef4444;">(ผิดพลาด ${errorCount} ชุด)</span>` : ''}`;
+                // Refresh dashboard data
+                setTimeout(() => fetchBinsData(), 500);
+            } else if (errorCount > 0) {
+                resultEl.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-times-circle"></i> เกิดข้อผิดพลาด ${errorCount} ชุด</span>`;
+            } else {
+                resultEl.innerHTML = `<span style="color: #f59e0b;"><i class="fa-solid fa-info-circle"></i> ไม่พบข้อมูลที่กรอก — กรุณากรอกอย่างน้อย Bin ID + ระยะทาง</span>`;
+            }
+        }
+
+        function clearSensorInputs() {
+            for (let i = 1; i <= 4; i++) {
+                ['gps-lat', 'gps-lng', 'gps-binid', 'us-distance', 'us-height', 'us-binid'].forEach(prefix => {
+                    const el = document.getElementById(`${prefix}-${i}`);
+                    if (el) {
+                        if (prefix === 'us-height') el.value = '80'; // Reset to default
+                        else el.value = '';
+                    }
+                });
+                // Reset status badges
+                ['gps-status', 'us-status'].forEach(prefix => {
+                    const el = document.getElementById(`${prefix}-${i}`);
+                    if (el) {
+                        el.textContent = 'ยังไม่ได้ตั้งค่า';
+                        el.style.background = '#e2e8f0';
+                        el.style.color = '#64748b';
+                    }
+                });
+                // Clear previews
+                const preview = document.getElementById(`us-fill-preview-${i}`);
+                if (preview) preview.innerHTML = '';
+            }
+            document.getElementById('sensor-submit-result').innerHTML = '';
+        }
+
+        // --- NEW: Auto Submit Logic ---
+        let autoSubmitTimer = null;
+        function toggleAutoSubmit() {
+            const toggle = document.getElementById('auto-sensor-toggle');
+            const bg = document.getElementById('auto-slider-bg');
+            const btn = document.getElementById('auto-slider-btn');
+            
+            if (toggle.checked) {
+                bg.style.backgroundColor = '#10b981';
+                btn.style.transform = 'translateX(20px)';
+                
+                // Pre-fill some realistic test data if empty
+                if (!document.getElementById('us-distance-1').value) {
+                    document.getElementById('gps-lat-1').value = '17.404396'; document.getElementById('gps-lng-1').value = '104.793134'; document.getElementById('gps-binid-1').value = 'BIN-NKP-001';
+                    document.getElementById('us-distance-1').value = '25'; document.getElementById('us-binid-1').value = '1';
+                    
+                    document.getElementById('gps-lat-2').value = '17.405200'; document.getElementById('gps-lng-2').value = '104.789800'; document.getElementById('gps-binid-2').value = 'BIN-NKP-002';
+                    document.getElementById('us-distance-2').value = '45'; document.getElementById('us-binid-2').value = '2';
+                }
+                
+                // Submit immediately, then every 10 seconds
+                submitSensorData();
+                autoSubmitTimer = setInterval(() => {
+                    // Randomize distance slightly to simulate usage
+                    for(let i=1; i<=4; i++) {
+                        let distEl = document.getElementById(`us-distance-${i}`);
+                        if(distEl && distEl.value) {
+                            let curr = parseInt(distEl.value) || 80;
+                            // simulate trash being added (distance decreases) or emptied (distance goes to 80)
+                            let next = curr - Math.floor(Math.random() * 5);
+                            if (next < 5) next = 80; 
+                            distEl.value = next;
+                        }
+                    }
+                    submitSensorData();
+                }, 10000);
+            } else {
+                bg.style.backgroundColor = '#cbd5e1';
+                btn.style.transform = 'translateX(0)';
+                if (autoSubmitTimer) clearInterval(autoSubmitTimer);
+            }
+        }
+
+        async function fetchAdminCrowd() {
+            try {
+                const res = await fetch('/api/crowd');
+                const data = await res.json();
+                const container = document.getElementById('admin-crowd-list');
+                if (!container) return;
+
+                container.innerHTML = data.map(loc => `
+                    <div class="glass-panel" style="padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.4);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 40px; height: 40px; background: ${loc.color}22; color: ${loc.color}; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    <i class="fa-solid ${loc.icon}"></i>
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 1.1rem; font-weight: 600;">${loc.name}</h4>
+                                    <span style="font-size: 0.8rem; color: var(--text-muted);">${loc.isManual ? '<i class="fa-solid fa-user-gear"></i> โหมดแมนนวล' : '<i class="fa-solid fa-microchip"></i> เซนเซอร์อัตโนมัติ'}</span>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.2rem; font-weight: 700; color: ${loc.color};">${Math.round(loc.level)}%</div>
+                                <span style="font-size: 0.75rem; background: ${loc.color}22; color: ${loc.color}; padding: 2px 8px; border-radius: 10px;">${loc.status}</span>
+                            </div>
+                        </div>
+                        <!-- AI พยากรณ์ 1 ชม. -->
+                        ${loc.forecast1h ? `<div style="background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.12); border-radius: 10px; padding: 8px 12px; margin-bottom: 1rem; font-size: 0.8rem; color: var(--sc-secondary); display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-clock-rotate-left"></i> <span>${loc.forecast1h}</span>
+                        </div>` : ''}
+                        ${loc.binBoost > 0 ? `<div style="background: rgba(239,68,68,0.05); border-radius: 8px; padding: 6px 10px; margin-bottom: 10px; font-size: 0.75rem; color: #ef4444;">
+                            <i class="fa-solid fa-trash-can"></i> ถังขยะในพื้นที่เกือบเต็ม — ระบบปรับ density +${loc.binBoost}%
+                        </div>` : ''}
+                        <div style="margin: 1rem 0; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,0.05);">
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 8px;">อัปเดตสถานะด้วยตนเอง:</label>
+                            <div style="display: flex; gap: 6px; margin-bottom: 12px; align-items: stretch; flex-wrap: wrap;">
+                                <select id="status-${loc.id}" class="elegant-btn sm" style="flex: 2; min-width: 140px; background: white; border: 1px solid #e2e8f0; font-size: 0.75rem; padding: 5px 8px; height: 38px;">
+                                    <option value="Low" ${loc.status === 'Low' ? 'selected' : ''}>Low (เบาบาง)</option>
+                                    <option value="Moderate" ${loc.status === 'Moderate' ? 'selected' : ''}>Moderate (ปานกลาง)</option>
+                                    <option value="High" ${loc.status === 'High' ? 'selected' : ''}>High (หนาแน่น)</option>
+                                </select>
+                                <div style="display: flex; gap: 6px; flex: 1; min-width: 100px;">
+                                    <input type="number" id="level-${loc.id}" value="${Math.round(loc.level)}" min="0" max="100" style="flex: 1; width: 40px; min-width: 0; padding: 5px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.8rem; text-align: center; height: 38px;">
+                                    <button onclick="updateLocationStatus('${loc.id}')" class="elegant-btn sm primary" style="padding: 0 12px; height: 38px; min-width: 44px; flex-shrink: 0;">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-bottom: 10px;">
+                            <div style="width: ${loc.level}%; height: 100%; background: ${loc.color}; transition: width 0.5s;"></div>
+                        </div>
+                    </div>
+                `).join('');
+                if (data.length > 0) {
+                    const avgLevel = Math.round(data.reduce((acc, curr) => acc + curr.level, 0) / data.length);
+                    const avgEl = document.getElementById('avg-crowd-val');
+                    if (avgEl) avgEl.innerText = `${avgLevel}%`;
+                }
+            } catch (e) { 
+                console.error('Admin Crowd Fetch error', e); 
+                const container = document.getElementById('admin-crowd-list');
+                if (container) container.innerHTML = '<p class="text-danger">ไม่สามารถโหลดข้อมูลเซ็นเซอร์ได้ โปรดตรวจสอบการเชื่อมต่อ Backend</p>';
+            }
+        }
+
+        async function updateLocationStatus(id) {
+            const status = document.getElementById(`status-${id}`).value;
+            const level = document.getElementById(`level-${id}`).value;
+            try {
+                const res = await fetch('/api/crowd/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, status, level })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    const btn = event.target.closest('button');
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                    btn.style.background = '#10b981';
+                    setTimeout(() => {
+                        btn.innerHTML = originalHtml;
+                        btn.style.background = '';
+                        fetchAdminCrowd();
+                    }, 1500);
+                }
+            } catch (e) { alert('Failed to update status'); }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const clockEl = document.getElementById('realtime-clock');
+            if (clockEl) clockEl.innerText = timeStr;
+        }
+
+        function renderVisitorChart(data) {
+            const vChart = document.getElementById('visitorChart');
+            if (!vChart) return;
+            const ctx1 = vChart.getContext('2d');
+            const gradientLine = ctx1.createLinearGradient(0, 0, 0, 350);
+            gradientLine.addColorStop(0, 'rgba(26, 54, 93, 0.15)');
+            gradientLine.addColorStop(1, 'rgba(26, 54, 93, 0)');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.day),
+                    datasets: [{
+                        label: 'จำนวนเช็คอิน',
+                        data: data.map(d => d.count),
+                        borderColor: '#1a365d',
+                        backgroundColor: gradientLine,
+                        borderWidth: 4,
+                        tension: 0.45,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#1a365d',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(0, 0, 0, 0.04)', drawBorder: false }, beginAtZero: true },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderTrafficList(response) {
+            // รองรับทั้ง format เก่า (array) และใหม่ ({ roads, aiSummary })
+            const data = Array.isArray(response) ? response : (response.roads || []);
+            const aiSummary = response.aiSummary || null;
+
+            data.forEach((road, index) => {
+                if (index < 4) {
+                    const nameEl = document.getElementById(`road-name-${index}`);
+                    const valEl = document.getElementById(`road-val-${index}`);
+                    const predEl = document.getElementById(`road-pred-${index}`);
+                    const cardEl = document.getElementById(`road-card-${index}`);
+
+                    if (nameEl) nameEl.innerText = road.name;
+                    if (valEl) {
+                        valEl.innerText = `${road.level}%`;
+                        valEl.style.color = road.color || 'var(--text-main)';
+                    }
+                    if (predEl) {
+                        const predText = road.aiPrediction || (road.level > 70 ? 'วิกฤต (ควรเลี่ยง)' : road.level > 40 ? 'หนาแน่น (ระวัง)' : 'ไหลลื่นปกติ');
+                        predEl.innerText = predText;
+                        predEl.style.color = road.color || 'var(--success-color)';
+                    }
+                    if (cardEl) cardEl.style.borderTopColor = road.color || '#10b981';
+                }
+            });
+
+            // Highlight ถนนที่จะติดบนแผนที่
+            if (window.adminMap && data.length > 0) {
+                highlightCongestedRoads(data);
+            }
+
+            const summaryElem = document.getElementById('ai-traffic-summary');
+            const congestedAlert = document.getElementById('congested-roads-alert');
+            const congestedList = document.getElementById('congested-roads-list');
+            const alertDot = document.getElementById('traffic-alert-dot');
+
+            if (aiSummary) {
+                const hasAlert = aiSummary.congestedNow.length > 0 || aiSummary.willCongestIn1h.length > 0;
+                if (summaryElem) {
+                    let html = `<i class="fa-solid fa-brain" style="color:var(--sc-secondary);"></i> <b>สถานะ: ${aiSummary.overallStatus}</b><br>`;
+                    if (aiSummary.congestedNow.length > 0) {
+                        html += `<span style="color:#ef4444;"><i class="fa-solid fa-circle-exclamation"></i> ติดขัดตอนนี้: ${aiSummary.congestedNow.join(', ')}</span><br>`;
+                    }
+                    if (aiSummary.willCongestIn1h.length > 0) {
+                        html += `<span style="color:#f59e0b;"><i class="fa-solid fa-triangle-exclamation"></i> จะติดใน 1 ชม.: ${aiSummary.willCongestIn1h.join(', ')}</span><br>`;
+                    }
+                    html += `<span style="color:var(--text-muted);">${aiSummary.recommendation}</span>`;
+                    summaryElem.innerHTML = html;
+                }
+                if (congestedAlert) congestedAlert.style.display = hasAlert ? 'block' : 'none';
+                if (congestedList && aiSummary.congestedNow.length > 0) congestedList.innerText = aiSummary.congestedNow.join(', ');
+                if (alertDot) alertDot.style.display = hasAlert ? 'block' : 'none';
+            } else {
+                const alertedRoads = data.filter(d => d.level > 60).map(d => d.name);
+                if (alertedRoads.length > 0) {
+                    if (summaryElem) summaryElem.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ตรวจพบความหนาแน่นบริเวณ <b>${alertedRoads.join(', ')}</b>`;
+                    if (congestedAlert) congestedAlert.style.display = 'block';
+                    if (congestedList) congestedList.innerText = alertedRoads.join(', ');
+                    if (alertDot) alertDot.style.display = 'block';
+                } else {
+                    if (summaryElem) summaryElem.innerText = 'สภาพการจราจรทั่วเมืองไหลลื่นปกติ';
+                    if (congestedAlert) congestedAlert.style.display = 'none';
+                    if (alertDot) alertDot.style.display = 'none';
+                }
+            }
+        }
+
+        // ===== Highlight ถนนที่ติด/จะติดบนแผนที่ =====
+        let trafficPolylines = [];
+        let trafficLabels = [];
+
+        function highlightCongestedRoads(roads) {
+            const map = window.adminMap;
+            if (!map) return;
+
+            // ลบ polylines เก่า
+            trafficPolylines.forEach(p => map.removeLayer(p));
+            trafficLabels.forEach(l => map.removeLayer(l));
+            trafficPolylines = [];
+            trafficLabels = [];
+
+            roads.forEach(road => {
+                if (!road.path || road.path.length < 2) return;
+
+                const color = road.color || '#10b981';
+                const isWillCongest = road.nextLevel > 75 && road.level <= 75;
+                const isCongested = road.level > 75;
+
+                // วาด polyline
+                const polyline = L.polyline(road.path, {
+                    color: color,
+                    weight: isCongested ? 8 : isWillCongest ? 6 : 4,
+                    opacity: isCongested ? 0.9 : isWillCongest ? 0.75 : 0.5,
+                    dashArray: isWillCongest ? '8, 6' : null // เส้นประ = จะติดใน 1 ชม.
+                }).addTo(map);
+
+                trafficPolylines.push(polyline);
+
+                // Label บอกชื่อถนน + AI prediction
+                if (isCongested || isWillCongest || road.isWorstNext) {
+                    const midIdx = Math.floor(road.path.length / 2);
+                    const midPoint = road.path[midIdx];
+                    const labelText = isCongested
+                        ? `🔴 ${road.name} (${road.level}%)`
+                        : `🟡 ${road.name} → ${road.nextLevel}% ใน 1 ชม.`;
+
+                    const label = L.marker(midPoint, {
+                        icon: L.divIcon({
+                            className: '',
+                            html: `<div style="
+                                background: rgba(0,0,0,0.8); color: #fff;
+                                padding: 4px 10px; border-radius: 8px;
+                                font-size: 0.7rem; font-weight: 700;
+                                white-space: nowrap; border-left: 3px solid ${color};
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                                font-family: 'Anuphan', sans-serif;
+                            ">${labelText}</div>`,
+                            iconAnchor: [0, 0]
+                        }),
+                        interactive: false
+                    }).addTo(map);
+
+                    trafficLabels.push(label);
+                }
+            });
+        }
+
+        function renderTrafficForecast(data) {
+            const tfChart = document.getElementById('trafficForecastChart');
+            if (!tfChart) return;
+            const ctx3 = tfChart.getContext('2d');
+            new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: data.filter((_, i) => i % 3 === 0).map(d => `${d.hour}:00`),
+                    datasets: [{
+                        label: 'ความหนาแน่นที่คาดการณ์ (%)',
+                        data: data.filter((_, i) => i % 3 === 0).map(d => d.level),
+                        backgroundColor: data.filter((_, i) => i % 3 === 0).map(d => 
+                            d.level > 70 ? '#ef4444' : (d.level > 40 ? '#f59e0b' : '#3182ce')
+                        ),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        const pieChartEl = document.getElementById('aiPieChart');
+        if (pieChartEl) {
+            const ctx2 = pieChartEl.getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['สายชิลล์', 'สายมู', 'สายลุย'],
+                    datasets: [{
+                        data: [45, 35, 20],
+                        backgroundColor: ['#3182ce', '#dd6b20', '#38a169'],
+                        borderWidth: 0,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 25, usePointStyle: true, pointStyle: 'circle' } }
+                    }
+                }
+            });
+        }
+
+        function toggleAdminMenu() {
+            const sidebar = document.getElementById('admin-sidebar');
+            const overlay = document.getElementById('admin-overlay');
+            if (sidebar) sidebar.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active');
+        }
+
+        function handleUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const section = urlParams.get('section');
+            if (section) {
+                showAdminSection(section);
+            }
+        }
+
+        initDashboard();
+        handleUrlParams();
+        setInterval(async () => {
+            try {
+                const res = await fetch('/api/traffic/status');
+                const data = await res.json();
+                renderTrafficList(data);
+            } catch (e) { console.warn('Traffic refresh error'); }
+        }, 5000);
+
+        // ===== SMART BIN GPS TRACKER (AUTO MODE) =====
+        let gpsWebSocket = null;
+        let trackedBins = new Map();
+        let gpsUpdateLog = [];
+        let userLat = null;
+        let userLng = null;
+        let userMarker = null;
+
+        // ดึงตำแหน่ง GPS จาก Local
+        function getUserLocation() {
+            if (!navigator.geolocation) {
+                addGPSLog('❌ เบราว์เซอร์ไม่รองรับ Geolocation', 'error');
+                document.getElementById('user-location-status').textContent = 'ไม่รองรับ';
+                return;
+            }
+
+            document.getElementById('user-location-status').textContent = 'กำลังดึง...';
+            addGPSLog('📍 กำลังดึงตำแหน่ง GPS จากเครื่อง...', 'info');
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userLat = position.coords.latitude;
+                    userLng = position.coords.longitude;
+                    const accuracy = Math.round(position.coords.accuracy);
+
+                    // อัปเดต UI
+                    document.getElementById('user-lat').textContent = userLat.toFixed(6);
+                    document.getElementById('user-lng').textContent = userLng.toFixed(6);
+                    document.getElementById('user-accuracy').textContent = `±${accuracy} เมตร`;
+                    document.getElementById('user-location-status').textContent = '✅ ดึงสำเร็จ';
+
+                    addGPSLog(`✅ ดึงตำแหน่งสำเร็จ: ${userLat.toFixed(6)}, ${userLng.toFixed(6)} (±${accuracy}m)`, 'success');
+                },
+                (error) => {
+                    let errorMsg = 'ไม่สามารถดึงตำแหน่งได้';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'ผู้ใช้ปฏิเสธการเข้าถึงตำแหน่ง';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'ข้อมูลตำแหน่งไม่พร้อมใช้งาน';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'หมดเวลาในการดึงตำแหน่ง';
+                            break;
+                    }
+                    
+                    document.getElementById('user-location-status').textContent = '❌ ล้มเหลว';
+                    addGPSLog(`❌ ${errorMsg}`, 'error');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        // แสดงตำแหน่งของผู้ใช้บนแผนที่
+        function showMyLocationOnMap() {
+            if (!userLat || !userLng) {
+                addGPSLog('⚠️ ยังไม่ได้ดึงตำแหน่ง GPS กรุณารอสักครู่', 'warning');
+                getUserLocation();
+                return;
+            }
+
+            if (!window.binsMap) {
+                addGPSLog('⚠️ แผนที่ยังไม่พร้อม', 'warning');
+                return;
+            }
+
+            // ลบ marker เก่า (ถ้ามี)
+            if (userMarker) {
+                window.binsMap.removeLayer(userMarker);
+            }
+
+            // สร้าง marker ใหม่
+            userMarker = L.marker([userLat, userLng], {
+                icon: L.divIcon({
+                    html: `<div style="
+                        width: 24px; height: 24px; border-radius: 50%;
+                        background: #3b82f6; border: 4px solid white;
+                        box-shadow: 0 0 0 3px rgba(59,130,246,0.3), 0 4px 12px rgba(0,0,0,0.2);
+                        animation: pulse-blue 2s infinite;
+                    "></div>`,
+                    className: '',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                })
+            }).addTo(window.binsMap);
+
+            userMarker.bindPopup(`
+                <div style="font-family: 'Anuphan', sans-serif; min-width: 180px;">
+                    <div style="font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: #3b82f6;">
+                        <i class="fa-solid fa-location-dot"></i> ตำแหน่งของคุณ
+                    </div>
+                    <div style="font-size: 0.8rem; color: #64748b;">
+                        <div>Lat: ${userLat.toFixed(6)}</div>
+                        <div>Lng: ${userLng.toFixed(6)}</div>
+                    </div>
+                </div>
+            `).openPopup();
+
+            // ซูมไปที่ตำแหน่งผู้ใช้
+            window.binsMap.setView([userLat, userLng], 16);
+
+            addGPSLog('📍 แสดงตำแหน่งของคุณบนแผนที่แล้ว', 'success');
+
+            // เพิ่ม CSS animation
+            if (!document.getElementById('pulse-blue-style')) {
+                const style = document.createElement('style');
+                style.id = 'pulse-blue-style';
+                style.textContent = `
+                    @keyframes pulse-blue {
+                        0%, 100% { box-shadow: 0 0 0 3px rgba(59,130,246,0.3), 0 4px 12px rgba(0,0,0,0.2); }
+                        50% { box-shadow: 0 0 0 8px rgba(59,130,246,0.15), 0 4px 12px rgba(0,0,0,0.2); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        // เชื่อมต่อ WebSocket อัตโนมัติ
+        function initGPSWebSocket() {
+            const wsUrl = `ws://${location.host}/ws`;
+            
+            try {
+                gpsWebSocket = new WebSocket(wsUrl);
+                
+                gpsWebSocket.onopen = () => {
+                    console.log('[GPS-WS] Connected');
+                    updateWSStatus('connected');
+                    addGPSLog('✅ เชื่อมต่อ WebSocket สำเร็จ', 'success');
+                };
+                
+                gpsWebSocket.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.type === 'gps_update') {
+                            handleGPSUpdate(msg.data);
+                        }
+                    } catch (e) {
+                        console.warn('[GPS-WS] Parse error', e);
+                    }
+                };
+                
+                gpsWebSocket.onclose = () => {
+                    console.log('[GPS-WS] Disconnected. Retry in 4s');
+                    updateWSStatus('disconnected');
+                    addGPSLog('⚠️ WebSocket หลุด กำลังเชื่อมต่อใหม่...', 'warning');
+                    setTimeout(initGPSWebSocket, 4000);
+                };
+                
+                gpsWebSocket.onerror = (err) => {
+                    console.error('[GPS-WS] Error', err);
+                    updateWSStatus('error');
+                };
+            } catch (e) {
+                console.error('[GPS-WS] Failed to connect', e);
+                updateWSStatus('error');
+                setTimeout(initGPSWebSocket, 4000);
+            }
+        }
+
+        // จัดการข้อมูล GPS ที่ได้รับ
+        function handleGPSUpdate(data) {
+            const binId = String(data.bin_id || data.device_id);
+            trackedBins.set(binId, data);
+            
+            // อัปเดตจำนวนถังที่ติดตาม
+            const countEl = document.getElementById('tracked-bins-count');
+            if (countEl) countEl.textContent = `${trackedBins.size} ถัง`;
+            
+            // เพิ่ม log
+            const fillLevel = data.fill_level || 0;
+            const statusIcon = fillLevel >= 90 ? '🔴' : fillLevel >= 70 ? '🟡' : '🟢';
+            addGPSLog(`${statusIcon} ${data.bin_name || 'Bin #' + binId} — ${fillLevel}% (${data.location_name || 'ไม่ระบุ'})`, 'info');
+            
+            // Refresh bins data เพื่อให้แผนที่อัปเดต
+            setTimeout(() => fetchBinsData(), 500);
+        }
+
+        // อัปเดตสถานะ WebSocket
+        function updateWSStatus(status) {
+            const statusEl = document.getElementById('ws-connection-status');
+            const gpsStatusEl = document.getElementById('gps-ws-status');
+            
+            if (status === 'connected') {
+                if (statusEl) statusEl.textContent = '🟢 เชื่อมต่อแล้ว';
+                if (gpsStatusEl) {
+                    gpsStatusEl.innerHTML = '<div style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: pulse-green 1.5s infinite;"></div> GPS เชื่อมต่อแล้ว';
+                    gpsStatusEl.style.background = 'rgba(16,185,129,0.1)';
+                    gpsStatusEl.style.color = '#10b981';
+                }
+            } else if (status === 'disconnected') {
+                if (statusEl) statusEl.textContent = '🟡 กำลังเชื่อมต่อ...';
+                if (gpsStatusEl) {
+                    gpsStatusEl.innerHTML = '<div style="width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;"></div> GPS กำลังเชื่อมต่อ...';
+                    gpsStatusEl.style.background = 'rgba(245,158,11,0.1)';
+                    gpsStatusEl.style.color = '#f59e0b';
+                }
+            } else {
+                if (statusEl) statusEl.textContent = '🔴 ไม่สามารถเชื่อมต่อ';
+                if (gpsStatusEl) {
+                    gpsStatusEl.innerHTML = '<div style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%;"></div> GPS ไม่สามารถเชื่อมต่อ';
+                    gpsStatusEl.style.background = 'rgba(239,68,68,0.1)';
+                    gpsStatusEl.style.color = '#ef4444';
+                }
+            }
+        }
+
+        // เพิ่ม log
+        function addGPSLog(message, type = 'info') {
+            const logEl = document.getElementById('gps-updates-log');
+            if (!logEl) return;
+            
+            const time = new Date().toLocaleTimeString('th-TH');
+            const colors = {
+                success: '#10b981',
+                warning: '#f59e0b',
+                error: '#ef4444',
+                info: '#3b82f6'
+            };
+            
+            const logItem = document.createElement('div');
+            logItem.style.cssText = `
+                padding: 6px 10px; background: white; border-radius: 6px;
+                border-left: 3px solid ${colors[type] || colors.info};
+                font-size: 0.7rem; color: #1e293b;
+            `;
+            logItem.innerHTML = `<span style="color: #94a3b8;">${time}</span> ${message}`;
+            
+            // ลบ placeholder ถ้ามี
+            if (logEl.querySelector('i.fa-satellite-dish')) {
+                logEl.innerHTML = '';
+            }
+            
+            logEl.insertBefore(logItem, logEl.firstChild);
+            
+            // เก็บแค่ 20 log ล่าสุด
+            while (logEl.children.length > 20) {
+                logEl.removeChild(logEl.lastChild);
+            }
+        }
+
+        // โหลดข้อมูล Demo (ใช้พิกัดจำลอง)
+        async function loadSimulatorDemo() {
+            const DEMO_BINS = [
+                { bin_id: 101, bin_name: 'ถังหน้าลานพญานาค', lat: 17.4101, lng: 104.7790, fill_level: 85, status: 'almost_full', location_name: 'ลานพญาศรีสัตตนาคราช' },
+                { bin_id: 102, bin_name: 'ถังตลาดอินโดจีน', lat: 17.4065, lng: 104.7782, fill_level: 95, status: 'full', location_name: 'ตลาดอินโดจีน' },
+                { bin_id: 103, bin_name: 'ถังหน้าเทศบาล', lat: 17.3995, lng: 104.7765, fill_level: 30, status: 'normal', location_name: 'ศาลากลางจังหวัด' },
+                { bin_id: 104, bin_name: 'ถังวัดโอกาส', lat: 17.4050, lng: 104.7770, fill_level: 60, status: 'normal', location_name: 'วัดโอกาส (ศรีบัวบาน)' },
+                { bin_id: 105, bin_name: 'ถังหอนาฬิกา', lat: 17.4069, lng: 104.7743, fill_level: 15, status: 'normal', location_name: 'หอนาฬิกาเวียดนามอนุสรณ์' },
+                { bin_id: 106, bin_name: 'ถังริมโขง', lat: 17.4120, lng: 104.7785, fill_level: 72, status: 'almost_full', location_name: 'ถนนสุนทรวิจิตร' }
+            ];
+
+            addGPSLog('🚀 เริ่มโหลดข้อมูล Demo 6 ถัง...', 'info');
+            
+            let success = 0;
+            let failed = 0;
+
+            for (const bin of DEMO_BINS) {
+                try {
+                    const res = await fetch('/api/gps/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bin)
+                    });
+
+                    if (res.ok) {
+                        success++;
+                        // จำลองการรับข้อมูลผ่าน WebSocket
+                        handleGPSUpdate(bin);
+                        await new Promise(r => setTimeout(r, 300));
+                    } else {
+                        failed++;
+                    }
+                } catch (err) {
+                    failed++;
+                    console.error('Demo load error:', err);
+                }
+            }
+
+            if (success > 0) {
+                addGPSLog(`✅ โหลดสำเร็จ ${success} ถัง${failed > 0 ? ` (ล้มเหลว ${failed} ถัง)` : ''}`, 'success');
+            } else {
+                addGPSLog(`❌ ไม่สามารถโหลดข้อมูล Demo ได้`, 'error');
+            }
+        }
+
+        // ล้างข้อมูลทั้งหมด
+        function clearAllBins() {
+            if (!confirm('ต้องการล้างข้อมูลถังขยะทั้งหมดหรือไม่?')) return;
+            
+            trackedBins.clear();
+            const countEl = document.getElementById('tracked-bins-count');
+            if (countEl) countEl.textContent = '0 ถัง';
+            
+            // ลบ user marker ด้วย
+            if (userMarker && window.binsMap) {
+                window.binsMap.removeLayer(userMarker);
+                userMarker = null;
+            }
+            
+            addGPSLog('🗑️ ล้างข้อมูลทั้งหมดแล้ว', 'warning');
+            
+            // Refresh bins data
+            setTimeout(() => fetchBinsData(), 500);
+        }
+
+        // เรียกใช้เมื่อเปิด section waste-bins
+        const originalShowAdminSection = showAdminSection;
+        showAdminSection = function(sectionId) {
+            originalShowAdminSection(sectionId);
+            
+            if (sectionId === 'waste-bins') {
+                setTimeout(() => {
+                    // เชื่อมต่อ WebSocket
+                    if (!gpsWebSocket || gpsWebSocket.readyState !== WebSocket.OPEN) {
+                        initGPSWebSocket();
+                    }
+                    // ดึงตำแหน่ง GPS อัตโนมัติ
+                    getUserLocation();
+                }, 500);
+            }
+        };
+    </script>
+    <script src="js/pm25.js"></script>
+    <script src="js/admin-map.js"></script>
+    <script src="js/admin-google-map.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

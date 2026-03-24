@@ -1,0 +1,504 @@
+/* 
+   MapNexus - Nakhon Phanom BESPOKE EDITORIAL Theme 
+   Hand-crafted, Asymmetrical, and Culturally Deep
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --sc-bg: #F8F7FF; /* Ultra-clean off-white with violet tint */
+    --sc-panel-bg: rgba(255, 255, 255, 0.98);
+    --sc-primary: #2E1065; /* Deep Royal Purple (Nakhon Phanom Night) */
+    --sc-secondary: #8B5CF6; /* Vibrant Violet */
+    --sc-accent: #A855F7; /* Bright Purple Accent */
+    --sc-text-main: #1E1B4B; /* Deep Indigo Text */
+    --sc-text-neutral: #64748B;
+    --sc-glass-border: rgba(139, 92, 246, 0.15);
+    --sc-shadow: 0 20px 50px rgba(46, 16, 101, 0.08); /* Premium Shadow */
+    --font-display: 'Outfit', sans-serif;
+    --font-body: 'Anuphan', 'Sarabun', sans-serif;
+    --naga-gradient: linear-gradient(135deg, #2E1065 0%, #7C3AED 100%);
+}
+
+body.smart-city-theme {
+    background-color: var(--sc-bg) !important;
+    background-image: 
+        radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.03) 0%, transparent 40%);
+    color: var(--sc-text-main) !important;
+    font-family: var(--font-body) !important;
+    line-height: 1.8;
+    overflow-x: hidden !important; 
+    width: 100%;
+    position: relative;
+}
+
+/* Removed body::after noise texture for a cleaner look */
+
+/* Asymmetrical Spacing & Rhythm */
+.section-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 100px 5vw;
+}
+
+/* Editorial Typography */
+.hero-title {
+    font-family: var(--font-display) !important;
+    font-weight: 700 !important;
+    font-size: clamp(2.2rem, 10vw, 6.5rem) !important;
+    line-height: 1.0 !important;
+    letter-spacing: -2px !important;
+    color: var(--sc-primary) !important;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.hero-subtitle {
+    font-family: var(--font-body) !important;
+    font-size: 1.25rem !important;
+    font-weight: 400 !important;
+    color: var(--sc-text-neutral) !important;
+    max-width: 50ch;
+    margin-bottom: 3rem;
+    border-left: 2px solid var(--sc-secondary);
+    padding-left: 2rem;
+}
+
+/* Naga Silhouette & Cultural Overlays */
+.naga-silhouette {
+    position: fixed;
+    right: -10%;
+    bottom: -5%;
+    width: 60%;
+    height: auto;
+    opacity: 0.04;
+    z-index: -1;
+    pointer-events: none;
+    transform: rotate(-15deg);
+}
+
+/* Bespoke Buttons - Modern & High-End */
+.elegant-btn.primary {
+    background: var(--naga-gradient) !important;
+    color: #fff !important;
+    border: none !important;
+    padding: 16px 35px !important;
+    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.2) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em;
+    font-size: 0.95rem;
+    transition: all 0.4s var(--ease-out-expo) !important;
+}
+
+.elegant-btn.primary:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(124, 58, 237, 0.3) !important;
+}
+
+/* Sophisticated Card Design */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.glass-panel {
+    background: var(--sc-panel-bg) !important;
+    border: 1px solid rgba(139, 92, 246, 0.08) !important;
+    box-shadow: var(--sc-shadow) !important;
+    border-radius: 20px !important;
+    padding: 2.5rem !important;
+    position: relative;
+    transition: all 0.5s var(--ease-out-expo) !important;
+}
+
+.glass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 6px; height: 100%;
+    background: var(--naga-gradient);
+    transform: scaleY(0);
+    transition: transform 0.4s var(--ease-out-expo);
+    transform-origin: bottom;
+    border-radius: 20px 0 0 20px;
+}
+
+.glass-panel:hover::before {
+    transform: scaleY(1);
+    transform-origin: top;
+}
+
+/* Floating Navigation - Refined Glassmorphism */
+.glass-navbar {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(15px) saturate(180%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1) !important;
+    padding: 20px 0 !important;
+    transition: all 0.4s ease;
+}
+
+.glass-navbar.scrolled {
+    background: rgba(46, 16, 101, 0.9) !important;
+    backdrop-filter: blur(20px);
+    padding: 12px 0 !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+}
+
+.glass-navbar.scrolled .logo-container span,
+.glass-navbar.scrolled .nav-center a {
+    color: #fff !important;
+}
+
+@media (max-width: 768px) {
+    .glass-navbar {
+        padding: 12px 0 !important;
+    }
+}
+
+/* Staggered Reveal Utilities */
+/* Watermark removed for cleaner editorial look */
+.bg-logo-watermark {
+    display: none !important;
+}
+
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 1s var(--ease-out-expo);
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Easing Curves */
+:root {
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- PREMIUM WEATHER & SYNC ANIMATIONS --- */
+@keyframes pulse-green {
+    0% { transform: scale(0.9); opacity: 0.5; box-shadow: 0 0 0 0 rgba(16, 218, 129, 0.7); }
+    70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 10px rgba(16, 218, 129, 0); }
+    100% { transform: scale(0.9); opacity: 0.5; box-shadow: 0 0 0 0 rgba(16, 218, 129, 0); }
+}
+
+@keyframes weather-float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
+.weather-card-premium {
+    transition: all 0.4s var(--ease-out-expo);
+    border: 1px solid rgba(255,255,255,0.8) !important;
+}
+
+.weather-card-premium:hover {
+    border-color: var(--sc-secondary) !important;
+    background: #fff !important;
+    box-shadow: 0 15px 45px rgba(124, 58, 237, 0.08) !important;
+}
+
+.weather-card-premium i {
+    animation: weather-float 3s ease-in-out infinite;
+}
+
+/* Forecast Scrollbar Styling */
+#home-forecast-grid::-webkit-scrollbar, 
+#admin-weather-forecast::-webkit-scrollbar {
+    height: 4px;
+}
+#home-forecast-grid::-webkit-scrollbar-thumb,
+#admin-weather-forecast::-webkit-scrollbar-thumb {
+    background: var(--sc-secondary);
+    border-radius: 10px;
+}
+#home-forecast-grid::-webkit-scrollbar-track,
+#admin-weather-forecast::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.03);
+}
+
+/* 
+   Responsive Adaptations - The 'Bespoke' Fluidity 
+*/
+
+@media (max-width: 1200px) {
+    .section-container {
+        padding: 80px 5vw;
+    }
+}
+
+@media (max-width: 992px) {
+    .feature-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+    }
+    
+    .glass-panel {
+        grid-column: span 12 !important;
+        padding: 2.5rem !important;
+    }
+
+    .hero-title {
+        letter-spacing: -1px !important;
+    }
+
+    /* Nested Frame Design (Frame within Frame) */
+.nested-frame-outer {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.04);
+    border-radius: 28px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s var(--ease-out-expo);
+    position: relative;
+    overflow: hidden;
+}
+
+.nested-frame-outer:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+    border-color: rgba(124, 58, 237, 0.2);
+}
+
+.nested-frame-inner {
+    background: linear-gradient(135deg, #fdfdfd 0%, #fafafa 100%);
+    border: 1px solid rgba(0,0,0,0.03);
+    border-radius: 20px;
+    padding: 1.8rem;
+    margin-top: 1.2rem;
+    flex: 1;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.01);
+}
+
+    /* Dynamic Injected Components - Nested Frame Support */
+.dynamic-grid {
+    display: flex !important;
+    gap: 25px !important;
+    width: 100% !important;
+    overflow-x: auto;
+    padding: 10px 0 30px 10px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sc-secondary) transparent;
+    scroll-snap-type: x mandatory;
+}
+
+.traffic-status-card, .crowd-status-panel {
+    min-width: 320px;
+    flex: 0 0 320px;
+    scroll-snap-align: start;
+}
+
+@media (max-width: 992px) {
+    .dynamic-grid {
+        flex-direction: column !important;
+        overflow-x: hidden;
+        padding: 0;
+    }
+    .traffic-status-card, .crowd-status-panel {
+        min-width: 0;
+        width: 100% !important;
+        flex: 1 1 auto;
+    }
+    .nested-frame-outer {
+        padding: 1.5rem !important;
+        border-radius: 20px !important;
+    }
+}
+    .naga-silhouette {
+        width: 150%;
+        right: -50%;
+        opacity: 0.015;
+    }
+}
+
+@media (max-width: 768px) {
+    .section-container {
+        padding: 60px 20px;
+    }
+
+    .hero-subtitle {
+        padding-left: 1.5rem;
+        font-size: 1.1rem !important;
+    }
+
+    .elegant-btn.primary {
+        width: 100%;
+        text-align: center;
+        padding: 16px 30px !important;
+    }
+
+    .glass-navbar {
+        padding: 15px 10px !important;
+    }
+
+    .naga-silhouette {
+        width: 150%;
+        right: -50%;
+        opacity: 0.015;
+    }
+}
+
+/* Fix for any hidden horizontal overflow - MOBILE ONLY */
+@media (max-width: 1024px) {
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .glass-panel, .card, .container, .section-container {
+        max-width: 100vw !important;
+        box-sizing: border-box !important;
+    }
+}
+
+/* Base Utility - No important, let desktop use its own rules */
+.dynamic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    width: 100%;
+}
+
+@media (max-width: 992px) {
+    .feature-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+    }
+    
+    .glass-panel {
+        grid-column: span 12 !important;
+        padding: 2rem !important;
+        width: 100% !important;
+    }
+
+    .section-container {
+        padding: 60px 15px !important;
+    }
+
+    .dynamic-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.2rem !important;
+        line-height: 1.1 !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .hero-section {
+        padding-top: 140px !important;
+        padding-bottom: 40px !important;
+        height: auto !important;
+        min-height: 100vh;
+        overflow: hidden;
+    }
+
+    .hero-content {
+        width: 100% !important;
+        padding: 0 1.5rem !important;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Prevent overlap with background cards on mobile */
+    .bg-card {
+        opacity: 0.1 !important;
+        z-index: 1 !important;
+    }
+
+    .glass-navbar .nav-container {
+        padding: 0 1rem !important;
+    }
+
+    .logo-container img {
+        height: 32px !important;
+    }
+
+    .logo-container span {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2.8rem !important;
+    }
+    
+    .glass-navbar {
+        padding: 10px !important;
+    }
+    
+    .nav-container {
+        padding: 0 10px !important;
+    }
+}
+
+/* Specific Section Overrides for 'Every Page' Fluidity */
+
+/* Programs Page Card Fix */
+@media (max-width: 768px) {
+    .program-card {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+    .program-img {
+        width: 100% !important;
+        height: 200px !important;
+    }
+    .program-info {
+        width: 100% !important;
+        padding: 1.5rem !important;
+    }
+    .programs-container {
+        margin-top: 80px !important;
+        padding: 0 15px !important;
+    }
+}
+
+/* Admin Dashboard Mobile Fix */
+@media (max-width: 1024px) {
+    .admin-layout {
+        flex-direction: column !important;
+    }
+    .admin-sidebar {
+        /* Do NOT override height here — sidebar is fixed with flex column, handled in admin-dashboard.html */
+        width: 100% !important;
+        padding: 1.5rem !important;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    }
+    .admin-main {
+        padding: 1rem !important;
+    }
+    .stat-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Ensure media elements don't overflow on small screens */
+@media (max-width: 1024px) {
+    iframe, img, video {
+        max-width: 100% !important;
+    }
+    /* Do NOT set canvas height: auto — it breaks Chart.js */
+}

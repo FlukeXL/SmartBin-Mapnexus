@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade to Premium - MapNexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/elegant-theme.css">
+    <link rel="stylesheet" href="css/smart-city-nexus.css">
+    <style>
+        .premium-hero {
+            padding: 80px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--sc-bg), var(--sc-accent)), url('https://images.unsplash.com/photo-1549487532-6a847f0a9cd5?auto=format&fit=crop&q=80') center/cover;
+            color: white;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 50px;
+        }
+        .premium-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .premium-hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto 50px;
+            padding: 0 20px;
+        }
+        .benefit-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        .benefit-card:hover {
+            transform: translateY(-5px);
+        }
+        .benefit-icon {
+            font-size: 3rem;
+            color: var(--purple-color);
+            margin-bottom: 20px;
+        }
+        .price-section {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .price-tag {
+            font-size: 4rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .price-tag span {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            font-weight: 400;
+        }
+    </style>
+</head>
+<body class="elegant-theme smart-city-theme">
+    
+    <nav class="glass-navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo-container" style="text-decoration: none;">
+                    <img src="assets/images/logo.png" alt="MapNexus" style="height: 40px; width: auto; object-fit: contain;">
+                    <span class="text-primary" style="font-weight: 700; font-size: 1.3rem; letter-spacing: -0.5px; font-family: var(--font-display);">Map<span class="text-secondary" style="font-weight: 400;">Nexus</span></span>
+                </a>
+            </div>
+            
+            <div class="nav-center">
+                <ul class="nav-links">
+                    <li><a href="index.html"><i class="fa-solid fa-house"></i> หน้าหลัก</a></li>
+                    <li><a href="programs.html"><i class="fa-solid fa-gem"></i> โปรแกรมพรีเมียม</a></li>
+                    <li><a href="map.html"><i class="fa-solid fa-map"></i> แผนที่ & AI</a></li>
+                    <li><a href="index.html#city-monitoring"><i class="fa-solid fa-users-viewfinder"></i> ติดตามกิจกรรม</a></li>
+                    <li><a href="profile.html"><i class="fa-solid fa-user"></i> เลเวล</a></li>
+                    <li class="mobile-only"><a href="login.html"><i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-right">
+                <div class="interaction-pill">
+                    <div id="pm25-widget" class="pm-pill loading">
+                        <i class="fa-solid fa-wind"></i>
+                        <span class="pm-value">--</span>
+                        <span class="pm-unit">AQI</span>
+                    </div>
+                    
+                    <div style="width: 1px; height: 20px; background: rgba(0,0,0,0.06);"></div>
+
+                    <div id="user-menu-container" style="display: flex; align-items: center; gap: 8px;">
+                        <a href="login.html" class="elegant-btn sm primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 50px;">เข้าสู่ระบบ</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="premium-hero">
+        <h1><i class="fa-solid fa-crown" style="color: #ffd700;"></i> อัปเกรดเป็น Premium</h1>
+        <p>ปลดล็อกประสบการณ์การท่องเที่ยวระดับ VIP สัมผัสความพิเศษและเข้าถึงโปรแกรมทัวร์สุด Exclusive ที่เราคัดสรรมาเพื่อคุณโดยเฉพาะ</p>
+    </div>
+
+    <div class="benefits-grid">
+        <div class="benefit-card">
+            <div class="benefit-icon"><i class="fa-solid fa-map-marked-alt"></i></div>
+            <h3 style="margin-bottom: 15px; color: var(--text-main);">โปรแกรมทัวร์สุดพิเศษ</h3>
+            <p style="color: var(--text-muted);">เข้าถึงโปรแกรมท่องเที่ยว 5 ดาวที่คนทั่วไปไม่สามารถดูได้ จองได้ก่อนใคร</p>
+        </div>
+        <div class="benefit-card">
+            <div class="benefit-icon"><i class="fa-solid fa-robot"></i></div>
+            <h3 style="margin-bottom: 15px; color: var(--text-main);">AI นำทางระดับโปร</h3>
+            <p style="color: var(--text-muted);">ปลดล็อกฟีเจอร์ AI คำนวณเส้นทางแบบละเอียด หลีกเลี่ยงรถติด อัปเดตแบบ Realtime</p>
+        </div>
+        <div class="benefit-card">
+            <div class="benefit-icon"><i class="fa-solid fa-star"></i></div>
+            <h3 style="margin-bottom: 15px; color: var(--text-main);">สะสมแต้ม X2</h3>
+            <p style="color: var(--text-muted);">รับค่าประสบการณ์ (XP) เป็น 2 เท่าเมื่อเช็คอินตามสถานที่ต่างๆ เลื่อนขั้นได้ไวกว่า</p>
+        </div>
+    </div>
+
+    <div class="price-section">
+        <h2 style="color: var(--text-main);">เริ่มต้นการเดินทางระดับ VIP วันนี้</h2>
+        <div class="price-tag">
+            ฿299 <span>/ เดือน</span>
+        </div>
+        
+        <div id="premium-status-msg" style="margin-bottom: 20px; font-weight: 500;"></div>
+        
+        <button id="upgrade-btn" class="elegant-btn primary" style="font-size: 1.2rem; padding: 15px 40px; border-radius: 30px;">
+            <i class="fa-solid fa-credit-card"></i> สมัครสมาชิก Premium ตอนนี้
+        </button>
+        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);"><i class="fa-solid fa-shield-halved"></i> ชำระเงินปลอดภัย ยกเลิกได้ตลอดเวลา</p>
+    </div>
+
+    <script src="js/pm25.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const upgradeBtn = document.getElementById('upgrade-btn');
+            const statusMsg = document.getElementById('premium-status-msg');
+            const userId = localStorage.getItem('userId');
+            const isPremium = localStorage.getItem('isPremium') === 'true';
+
+            if (!userId) {
+                statusMsg.innerHTML = '<span style="color: var(--danger-color);">กรุณาเข้าสู่ระบบก่อนทำรายการ</span>';
+                upgradeBtn.disabled = true;
+                setTimeout(() => window.location.href = 'login.html', 2000);
+                return;
+            }
+
+            if (isPremium) {
+                statusMsg.innerHTML = '<span style="color: var(--success-color);"><i class="fa-solid fa-check-circle"></i> คุณเป็นสมาชิก Premium อยู่แล้ว!</span>';
+                upgradeBtn.style.display = 'none';
+                return;
+            }
+
+            upgradeBtn.addEventListener('click', async () => {
+                upgradeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังดำเนินการ...';
+                upgradeBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('/api/user/upgrade', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId })
+                    });
+                    
+                    if (response.ok) {
+                        localStorage.setItem('isPremium', 'true');
+                        statusMsg.innerHTML = '<span style="color: var(--success-color);"><i class="fa-solid fa-check-circle"></i> ยินดีต้อนรับสู่ Premium! ระบบกำลังพากลับไปหน้าโปรแกรมทัวร์...</span>';
+                        upgradeBtn.style.display = 'none';
+                        setTimeout(() => window.location.href = 'programs.html', 2500);
+                    } else {
+                        throw new Error("Failed to upgrade");
+                    }
+                } catch (error) {
+                    upgradeBtn.innerHTML = '<i class="fa-solid fa-credit-card"></i> สมัครสมาชิก Premium ตอนนี้';
+                    upgradeBtn.disabled = false;
+                    statusMsg.innerHTML = '<span style="color: var(--danger-color);">เกิดข้อผิดพลาด โปรดลองอีกครั้ง</span>';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

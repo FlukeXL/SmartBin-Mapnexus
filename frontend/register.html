@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapNexus - สมัครสมาชิก</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/elegant-theme.css">
+    <link rel="stylesheet" href="css/smart-city-nexus.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--sc-bg);
+        }
+
+        .auth-card {
+            max-width: 500px;
+            width: 100%;
+            padding: 3rem;
+            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.9rem 1.1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+            font-family: var(--font-main);
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(183, 121, 31, 0.05);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-logo {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1.2rem auto;
+            background: var(--secondary-color);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 2.2rem;
+            box-shadow: 0 10px 25px rgba(183, 121, 31, 0.15);
+        }
+    </style>
+</head>
+
+<body class="elegant-theme smart-city-theme">
+    <div class="elegant-pattern"></div>
+
+    <div class="auth-container">
+        <div class="auth-card glass-panel">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <h2 style="color: var(--text-main); font-size: 1.8rem; margin-bottom: 0.5rem;">เข้าร่วม MapNexus</h2>
+                <p style="color: var(--text-muted);">เริ่มสร้างประสบการณ์การท่องเที่ยวใหม่ในนครพนม</p>
+            </div>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user"></i> ชื่อ-นามสกุล</label>
+                    <input type="text" class="form-control" placeholder="กรอกชื่อของคุณ" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-envelope"></i> อีเมล</label>
+                    <input type="email" class="form-control" placeholder="example@mail.com" required>
+                </div>
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-lock"></i> รหัสผ่าน</label>
+                        <input type="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-shield-halved"></i> ยืนยันรหัสผ่าน</label>
+                        <input type="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="elegant-btn secondary"
+                    style="width: 100%; justify-content: center; margin-top: 1rem; padding: 1rem; border: none;">
+                    สร้างบัญชีผู้ใช้ <i class="fa-solid fa-user-check"></i>
+                </button>
+
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <p style="margin: 0; font-size: 0.95rem; color: var(--text-muted); font-weight: 500;">มีบัญชีอยู่แล้ว? <a href="login.html" style="color: var(--sc-secondary); font-weight: 700;">เข้าสู่ระบบที่นี่</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="js/app.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/authentication.js"></script>
+</body>
+
+</html>

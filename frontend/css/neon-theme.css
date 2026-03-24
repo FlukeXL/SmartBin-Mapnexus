@@ -1,0 +1,192 @@
+/* Neon Cyber Theme Variables */
+:root {
+    --primary-color: #00f3ff;
+    --primary-glow: rgba(0, 243, 255, 0.5);
+    --secondary-color: #ff00ea;
+    --secondary-glow: rgba(255, 0, 234, 0.5);
+    --accent-color: #00ff66;
+    --purple-color: #9d00ff;
+    
+    --bg-gradient: linear-gradient(135deg, #050510 0%, #0a0a20 100%);
+}
+
+.cyber-theme {
+    background: var(--bg-gradient);
+}
+
+/* Cyber Grid Background */
+.cyber-grid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: 
+        linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: -1;
+    transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+    animation: grid-move 10s linear infinite;
+}
+
+@keyframes grid-move {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 50px; }
+}
+
+/* Text Colors with Glow Effect */
+.neon-text-primary { color: var(--primary-color); text-shadow: 0 0 10px var(--primary-glow); }
+.neon-text-secondary { color: var(--secondary-color); text-shadow: 0 0 10px var(--secondary-glow); }
+.neon-text-accent { color: var(--accent-color); text-shadow: 0 0 10px rgba(0, 255, 102, 0.5); }
+.neon-text-purple { color: var(--purple-color); text-shadow: 0 0 10px rgba(157, 0, 255, 0.5); }
+
+/* Buttons */
+.cyber-btn {
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px; /* Slightly square for tech feel */
+    font-family: var(--font-main);
+    font-weight: 500;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1;
+}
+
+.cyber-btn.sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+}
+
+.cyber-btn.primary {
+    background: rgba(0, 243, 255, 0.1);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+}
+
+.cyber-btn.primary:hover {
+    background: var(--primary-color);
+    color: #000;
+    box-shadow: 0 0 30px var(--primary-glow);
+}
+
+.cyber-btn.secondary {
+    background: rgba(255, 0, 234, 0.1);
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 15px rgba(255, 0, 234, 0.2);
+}
+
+.cyber-btn.secondary:hover {
+    background: var(--secondary-color);
+    color: #fff;
+    box-shadow: 0 0 30px var(--secondary-glow);
+}
+
+.cyber-btn.accent {
+    background: rgba(0, 255, 102, 0.1);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.cyber-btn.accent:hover {
+    background: var(--accent-color);
+    color: #000;
+    box-shadow: 0 0 30px rgba(0, 255, 102, 0.5);
+}
+
+/* Glass Panels with Glow */
+.glow-panel {
+    border-top: 2px solid var(--primary-color);
+    box-shadow: 0 -5px 20px var(--primary-glow);
+}
+
+.hover-glow:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+    box-shadow: 0 10px 30px rgba(0, 243, 255, 0.15);
+}
+
+/* Glitch Title Text Effect */
+.glitch-text {
+    font-size: 4rem;
+    font-weight: 700;
+    position: relative;
+    color: #fff;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+}
+
+.glitch-text::before, .glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch-text::before {
+    left: 2px;
+    text-shadow: -2px 0 var(--secondary-color);
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+    left: -2px;
+    text-shadow: -2px 0 var(--primary-color);
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim2 5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+    0% { clip: rect(69px, 9999px, 16px, 0); }
+    20% { clip: rect(5px, 9999px, 59px, 0); }
+    40% { clip: rect(40px, 9999px, 89px, 0); }
+    60% { clip: rect(2px, 9999px, 99px, 0); }
+    80% { clip: rect(81px, 9999px, 12px, 0); }
+    100% { clip: rect(27px, 9999px, 43px, 0); }
+}
+
+@keyframes glitch-anim2 {
+    0% { clip: rect(29px, 9999px, 86px, 0); }
+    20% { clip: rect(75px, 9999px, 29px, 0); }
+    40% { clip: rect(10px, 9999px, 49px, 0); }
+    60% { clip: rect(52px, 9999px, 29px, 0); }
+    80% { clip: rect(31px, 9999px, 92px, 0); }
+    100% { clip: rect(7px, 9999px, 83px, 0); }
+}
+
+/* PM2.5 Alert States */
+.pm25-widget.loading { border-color: #555; color: #aaa; }
+.pm25-widget.good { 
+    border-color: var(--accent-color); 
+    color: var(--accent-color); 
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.3); 
+}
+.pm25-widget.moderate { 
+    border-color: #ffcc00; 
+    color: #ffcc00; 
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.3); 
+}
+.pm25-widget.danger { 
+    background: rgba(255, 0, 60, 0.15);
+    border-color: #ff003c; 
+    color: #ff003c; 
+    box-shadow: 0 0 15px rgba(255, 0, 60, 0.5); 
+    animation: pulse-danger 1.5s infinite; 
+}
+
+@keyframes pulse-danger {
+    0% { box-shadow: 0 0 10px rgba(255, 0, 60, 0.5); }
+    50% { box-shadow: 0 0 25px rgba(255, 0, 60, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(255, 0, 60, 0.5); }
+}

@@ -1,0 +1,5 @@
+.env
+node_modules/
+cloudflared.exe
+.vscode/
+.agents/

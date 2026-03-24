@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapNexus - นครพนมเมืองอัจฉริยะ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/elegant-theme.css">
+    <link rel="stylesheet" href="css/smart-city-nexus.css">
+</head>
+<body class="elegant-theme smart-city-theme">
+    <!-- Smart City Background Elements -->
+    <div class="bg-logo-watermark"></div>
+    <div class="elegant-pattern"></div>
+    <div class="temple-glow-pattern"></div>
+    <img src="assets/images/naga-swirl.png" class="naga-silhouette" alt="">
+
+    <nav class="glass-navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo-container">
+                    <img src="assets/images/logo.png" alt="MapNexus" style="height: 40px; width: auto; object-fit: contain;">
+                    <span class="text-primary" style="font-weight: 700; font-size: 1.3rem; letter-spacing: -0.5px;">Map<span class="text-secondary" style="font-weight: 400;">Nexus</span></span>
+                </a>
+            </div>
+            
+            <div class="nav-center">
+                <ul class="nav-links">
+                    <li><a href="index.html" class="active"><i class="fa-solid fa-house"></i> หน้าหลัก</a></li>
+                    <li><a href="programs.html"><i class="fa-solid fa-gem"></i> พรีเมียม</a></li>
+                    <li><a href="map.html"><i class="fa-solid fa-map"></i> แผนที่ & AI</a></li>
+                    <li><a href="#city-monitoring"><i class="fa-solid fa-users-viewfinder"></i> ติดตามกิจกรรม</a></li>
+                    <li><a href="profile.html"><i class="fa-solid fa-user"></i> เลเวล</a></li>
+                    <li class="mobile-only"><a href="login.html"><i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-right">
+                <div class="interaction-pill">
+                    <div id="pm25-widget" class="pm-pill loading">
+                        <i class="fa-solid fa-wind"></i>
+                        <span class="pm-value">--</span>
+                        <span class="pm-unit">AQI</span>
+                    </div>
+                    
+                    <div style="width: 1px; height: 20px; background: rgba(0,0,0,0.06);"></div>
+
+                    <div id="user-menu-container" style="display: flex; align-items: center; gap: 8px;">
+                        <a href="login.html" class="elegant-btn sm primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 50px;">เข้าสู่ระบบ</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="section-container" style="padding-top: 15vh;">
+        <div class="hero-split" style="display: flex; align-items: flex-end; gap: 4rem; margin-bottom: 12vh;">
+            <div class="hero-text-side" style="flex: 1.2;">
+                <h1 class="hero-title reveal">จิตวิญญาณแห่ง <br><span style="color: var(--sc-secondary);">แม่น้ำโขง</span></h1>
+                <p class="hero-subtitle reveal" style="transition-delay: 0.2s;">
+                    นครพนมดิจิทัลทวิน: อินเทอร์เฟซที่ประสานระหว่างมรดกทางวัฒนธรรมอันล้ำค่าและความฉลาดทางเมืองที่ทันสมัย สัมผัสเมืองริมฝั่งโขงในรูปแบบที่คุณไม่เคยเห็นมาก่อน
+                </p>
+                <div class="hero-actions reveal" style="transition-delay: 0.4s;">
+                    <a href="map.html" class="elegant-btn primary">เริ่มออกเดินทาง</a>
+                </div>
+            </div>
+            <div class="hero-image-side reveal" style="flex: 0.8; height: 600px; background: #fff; position: relative; overflow: hidden; transition-delay: 0.6s; border-radius: 20px;">
+                <!-- Hero Image Carousel -->
+                <div id="hero-carousel" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                    <div class="hero-slide hero-slide-active" style="background-image: url('assets/images/slides/slide1.png');"></div>
+                    <div class="hero-slide" style="background-image: url('assets/images/slides/slide2.png');"></div>
+                    <div class="hero-slide" style="background-image: url('assets/images/slides/slide3.png');"></div>
+                </div>
+                <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); pointer-events: none;"></div>
+                <div style="position: absolute; bottom: 2.5rem; right: 0; background: var(--sc-primary); color: #fff; padding: 1.5rem 2rem; transform: translateX(10%); border-radius: 12px 0 0 12px; box-shadow: -10px 10px 30px rgba(0,0,0,0.2);">
+                    <small style="text-transform: uppercase; letter-spacing: 3px; font-weight: 700; opacity: 0.6;">ชั้นข้อมูลอัจฉริยะ</small>
+                    <p style="margin: 0.5rem 0 0; font-family: var(--font-display); font-size: 1.8rem;">ดิจิทัลทวิน v2.1</p>
+                </div>
+                <div style="position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10;">
+                    <span class="hero-dot hero-dot-active" onclick="goHeroSlide(0)"></span>
+                    <span class="hero-dot" onclick="goHeroSlide(1)"></span>
+                    <span class="hero-dot" onclick="goHeroSlide(2)"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-grid">
+            <div class="glass-panel reveal" style="grid-column: span 7; transition-delay: 0.1s; cursor: pointer;" onclick="location.href='breath-of-the-city.html'">
+                <small style="color: var(--sc-secondary); font-weight: 700; text-transform: uppercase;">01 / สิ่งแวดล้อม</small>
+                <h3 style="font-family: var(--font-display); font-size: 2.5rem; margin: 1rem 0;">ลมหายใจแห่งเมือง</h3>
+                <p>ระบบติดตามคุณภาพอากาศแบบเรียลไทม์ด้วยขุมพลัง AI เพื่อสุขภาพที่ดีของคุณ</p>
+                <div id="pm25-widget-large" style="margin-top: 2rem; font-size: 4rem; font-family: var(--font-display);">-- <span style="font-size: 1rem; font-family: var(--font-body);">AQI</span></div>
+            </div>
+
+            <div class="glass-panel reveal" style="grid-column: span 5; background: var(--sc-primary) !important; color: #fff !important; transition-delay: 0.2s; cursor: pointer;" onclick="location.href='citizen-passport.html'">
+                <small style="color: var(--sc-secondary); font-weight: 700; text-transform: uppercase;">02 / กิจกรรมและรางวัล</small>
+                <h3 style="font-family: var(--font-display); font-size: 2.5rem; margin: 1rem 0;">หนังสือเดินทางพลเมือง</h3>
+                <p style="opacity: 0.8;">ทุกสถานที่ที่ไปเยือนคือความทรงจำที่ถูกบันทึก ยกระดับสถานะของคุณจาก 'นักเดินทาง' สู่ 'จิตวิญญาณแห่งเมือง'</p>
+            </div>
+
+            <div class="glass-panel reveal" style="grid-column: span 4; transition-delay: 0.3s; cursor: pointer;" onclick="location.href='flow-of-life.html'">
+                <small style="color: var(--sc-secondary); font-weight: 700; text-transform: uppercase;">03 / การจราจร</small>
+                <h3 style="font-family: var(--font-display); font-size: 1.8rem; margin: 1rem 0;">กระแสชีวิต</h3>
+                <p>แผนผังความหนาแน่นของถนนแบบเรียลไทม์ เดินทางริมฝั่งโขงด้วยความสะดวกสบายสูงสุด</p>
+            </div>
+
+            <div class="glass-panel reveal" style="grid-column: span 8; transition-delay: 0.4s; cursor: pointer;" onclick="location.href='ai-route-planner.html'">
+                <small style="color: var(--sc-secondary); font-weight: 700; text-transform: uppercase;">04 / ระบบอัจฉริยะ</small>
+                <h3 style="font-family: var(--font-display); font-size: 2.5rem; margin: 1rem 0;">AI วางแผนเส้นทาง</h3>
+                <p>ระบบค้นหาเส้นทางที่ซับซ้อนและเคารพจังหวะความเป็นอยู่ของท้องถิ่น วางแผนการจาริกแสวงบุญหรือการเดินเล่นยามเย็นได้อย่างง่ายดาย</p>
+            </div>
+        </div>
+
+        <!-- Premium Photo Slideshow -->
+        <div class="reveal" style="margin-top: 6rem; position: relative;">
+            <div style="text-align: center; margin-bottom: 2.5rem;">
+                <small style="color: var(--sc-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 3px;">แกลเลอรี่</small>
+                <h2 style="font-family: var(--font-display); font-size: 2.8rem; margin: 0.5rem 0 0;">ค้นพบ <span class="text-secondary">เมืองนครพนม</span></h2>
+            </div>
+
+            <div id="main-slideshow" style="position: relative; width: 100%; height: 500px; border-radius: 20px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.12);">
+                <!-- Slides -->
+                <div class="main-slide main-slide-active" data-index="0">
+                    <img src="assets/images/slides/slide1.png" alt="Nakhon Phanom Aerial">
+                    <div class="slide-caption">
+                        <h3>วิวทิวทัศน์แม่น้ำโขง</h3>
+                        <p>ความงดงามของเมืองนครพนมยามพระอาทิตย์ตก</p>
+                    </div>
+                </div>
+                <div class="main-slide" data-index="1">
+                    <img src="assets/images/slides/slide2.png" alt="Phra That Phanom">
+                    <div class="slide-caption">
+                        <h3>พระธาตุพนม</h3>
+                        <p>มรดกทางวัฒนธรรมอันล้ำค่าของนครพนม</p>
+                    </div>
+                </div>
+                <div class="main-slide" data-index="2">
+                    <img src="assets/images/slides/slide3.png" alt="Mekong Dawn">
+                    <div class="slide-caption">
+                        <h3>แม่น้ำโขงยามเช้า</h3>
+                        <p>สายหมอกเหนือแม่น้ำโขง ภาพที่หาดูได้ยาก</p>
+                    </div>
+                </div>
+                <div class="main-slide" data-index="3">
+                    <img src="assets/images/slides/slide1.png" alt="Slide 4">
+                    <div class="slide-caption">
+                        <h3>สะพานมิตรภาพไทย-ลาว</h3>
+                        <p>เชื่อมต่อสองฝั่งแม่น้ำโขงอย่างสง่างาม</p>
+                    </div>
+                </div>
+                <div class="main-slide" data-index="4">
+                    <img src="assets/images/slides/slide2.png" alt="Slide 5">
+                    <div class="slide-caption">
+                        <h3>เทศกาลไหลเรือไฟ</h3>
+                        <p>ประเพณีอันงดงามของชาวนครพนม</p>
+                    </div>
+                </div>
+                <div class="main-slide" data-index="5">
+                    <img src="assets/images/slides/slide3.png" alt="Slide 6">
+                    <div class="slide-caption">
+                        <h3>ถนนคนเดินนครพนม</h3>
+                        <p>สัมผัสวิถีชีวิตและอาหารท้องถิ่น</p>
+                    </div>
+                </div>
+                <div class="main-slide" data-index="6">
+                    <img src="assets/images/slides/slide1.png" alt="Slide 7">
+                    <div class="slide-caption">
+                        <h3>พญาศรีสัตตนาคราช</h3>
+                        <p>สัญลักษณ์แห่งความยิ่งใหญ่ริมโขง</p>
+                    </div>
+                </div>
+                <div class="main-slide" data-index="7">
+                    <img src="assets/images/slides/slide2.png" alt="Slide 8">
+                    <div class="slide-caption">
+                        <h3>วัดพระอินทร์แปลง</h3>
+                        <p>ศิลปะลาวโบราณอันวิจิตรงดงาม</p>
+                    </div>
+                </div>
+                <div class="main-slide" data-index="8">
+                    <img src="assets/images/slides/slide3.png" alt="Slide 9">
+                    <div class="slide-caption">
+                        <h3>หมู่บ้านท่าอุเทน</h3>
+                        <p>วัฒนธรรมไทยญ้อริมแม่น้ำโขง</p>
+                    </div>
+                </div>
+                <div class="main-slide" data-index="9">
+                    <img src="assets/images/slides/slide1.png" alt="Slide 10">
+                    <div class="slide-caption">
+                        <h3>ทุ่งนาสีทอง</h3>
+                        <p>ความงามของธรรมชาติและวิถีเกษตรกรรม</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Arrows -->
+                <button class="slide-arrow slide-prev" onclick="changeSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="slide-arrow slide-next" onclick="changeSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
+
+                <!-- Counter -->
+                <div class="slide-counter">
+                    <span id="slide-current">01</span> / <span id="slide-total">10</span>
+                </div>
+            </div>
+
+            <!-- Dot Navigation -->
+            <div id="slide-dots" style="display: flex; justify-content: center; gap: 8px; margin-top: 1.5rem;"></div>
+        </div>
+    </main>
+        </div>
+    </main>
+
+    <section class="section-container" id="city-monitoring" style="padding-top: 0; width: 100%; overflow: hidden;">
+        <h2 class="hero-title reveal" style="font-size: 3rem; margin-bottom: 4rem;">จังหวะ <span class="text-secondary">แห่งเมือง</span></h2>
+        
+        <div class="dashboard-wrapper" style="display: flex; flex-direction: column; gap: 4rem;">
+            <!-- Traffic Section -->
+            <div class="reveal">
+                <div class="section-header-row">
+                    <div class="section-header-icon" style="color: #f59e0b;">
+                        <i class="fa-solid fa-car-side"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-family: var(--font-display); font-size: 1.8rem; line-height: 1.2; letter-spacing: -0.5px;">กระแสจราจร</h3>
+                        <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">การตรวจสอบความหนาแน่นแบบเรียลไทม์</span>
+                    </div>
+                </div>
+
+                <div id="home-traffic-list" class="dynamic-grid">
+                    <p style="color: var(--sc-text-neutral);">กำลังรอข้อมูลจากระบบเมือง...</p>
+                </div>
+            </div>
+
+            <!-- Crowd Section -->
+            <div class="reveal">
+                <div class="section-header-row">
+                    <div class="section-header-icon" style="color: #8b5cf6;">
+                        <i class="fa-solid fa-users-viewfinder"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-family: var(--font-display); font-size: 1.8rem; line-height: 1.2; letter-spacing: -0.5px;">ความหนาแน่นของกลุ่มชน</h3>
+                        <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">การวิเคราะห์ประชากรในสถานที่สำคัญ</span>
+                    </div>
+                </div>
+
+                <div id="crowd-status-list" class="dynamic-grid">
+                    <p style="color: var(--sc-text-neutral);">กำลังตรวจสอบสถานที่สำคัญ...</p>
+                </div>
+            </div>
+
+            <!-- Weather Section -->
+            <div class="reveal">
+                <div class="section-header-row">
+                    <div class="section-header-icon" style="color: #10b981;">
+                        <i class="fa-solid fa-cloud-sun"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-family: var(--font-display); font-size: 1.8rem; line-height: 1.2; letter-spacing: -0.5px;">ข้อมูลสภาพอากาศอัจฉริยะ</h3>
+                        <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">สถานะอากาศแบบเรียลไทม์ในนครพนม</span>
+                    </div>
+                </div>
+
+                <div id="home-weather-grid" class="dynamic-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                    <p style="color: var(--sc-text-neutral);">กำลังสแกนข้อมูลชั้นบรรยากาศ...</p>
+                </div>
+            </div>
+
+            <!-- Mekong Section -->
+            <div class="reveal">
+                <div class="section-header-row">
+                    <div class="section-header-icon" style="color: #3b82f6;">
+                        <i class="fa-solid fa-water"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-family: var(--font-display); font-size: 1.8rem; line-height: 1.2; letter-spacing: -0.5px;">ระดับน้ำโขง</h3>
+                        <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">การโทรมาตรลำน้ำและการป้องกันน้ำท่วม</span>
+                    </div>
+                </div>
+
+                <div class="metric-card" style="padding: 2.5rem; min-height: 400px; grid-column: 1 / -1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">สถานะปัจจุบัน</div>
+                            <div id="home-water-status" style="font-size: 2.4rem; font-weight: 800; letter-spacing: -1px; line-height: 1;">กำลังโหลด...</div>
+                        </div>
+                        <div class="metric-badge live" style="font-size: 0.75rem; padding: 6px 14px;">ข้อมูลเรียลไทม์</div>
+                    </div>
+                    <div style="width: 100%; height: 320px; position: relative; margin-top: 1rem;">
+                        <canvas id="homeWaterChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        /* ===== Hero Carousel ===== */
+        .hero-slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+        .hero-slide-active { opacity: 1; z-index: 2; }
+        .hero-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid rgba(255,255,255,0.6);
+        }
+        .hero-dot-active, .hero-dot:hover {
+            background: #fff;
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* ===== Main Gallery Slideshow ===== */
+        .main-slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            transform: scale(1.05);
+            z-index: 1;
+        }
+        .main-slide-active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 2;
+        }
+        .main-slide img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .slide-caption {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 3rem 2.5rem 2rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+            color: #fff;
+            z-index: 5;
+        }
+        .slide-caption h3 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            margin: 0 0 0.3rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .slide-caption p {
+            font-size: 1rem;
+            opacity: 0.85;
+            margin: 0;
+        }
+        .slide-arrow {
+            position: absolute;
+            top: 50%; transform: translateY(-50%);
+            z-index: 10;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #fff;
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s;
+        }
+        .slide-arrow:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .slide-prev { left: 20px; }
+        .slide-next { right: 20px; }
+        .slide-counter {
+            position: absolute;
+            top: 20px; right: 20px;
+            z-index: 10;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .slide-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid rgba(0,0,0,0.1);
+        }
+        .slide-dot-active, .slide-dot:hover {
+            background: var(--sc-secondary, #d4af37);
+            transform: scale(1.3);
+            border-color: var(--sc-secondary, #d4af37);
+        }
+
+        /* ===== NEW PREMIUM METRICS CARDS ===== */
+        .metric-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.7));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            padding: 1.8rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.03), inset 0 0 0 1px rgba(255,255,255,0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 180px;
+        }
+        .metric-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(255,255,255,0.8);
+        }
+        .metric-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.2rem;
+            z-index: 2;
+        }
+        .metric-icon-box {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+        }
+        .metric-badge {
+            font-size: 0.65rem; font-weight: 800; padding: 4px 10px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.5px;
+            display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .metric-badge.live { background: rgba(255,255,255,0.9); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .metric-badge.live::before { content:''; width:6px; height:6px; background:#10b981; border-radius:50%; animation: pulse-green 1.5s infinite; box-shadow: 0 0 8px #10b981; }
+        .metric-badge.city { background: rgba(255,255,255,0.9); color: #6366f1; border: 1px solid rgba(99, 102, 241, 0.2); }
+        
+        .metric-card-body { z-index: 2; flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+        .metric-title { font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem; line-height: 1.3; }
+        .metric-value { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 0.5rem; }
+        
+        .metric-progress-bg { width: 100%; height: 6px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; margin: 12px 0 6px; }
+        .metric-progress-fill { height: 100%; border-radius: 10px; transition: width 1s cubic-bezier(0.1, 0.8, 0.2, 1); }
+        .metric-footer { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; display: flex; justify-content: space-between; }
+        
+        /* Premium Section Header */
+        .section-header-row {
+            display: flex; align-items: center; gap: 18px; margin-bottom: 2.5rem;
+        }
+        .section-header-icon {
+            width: 55px; height: 55px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5));
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 768px) {
+            .slide-caption h3 { font-size: 1.4rem; }
+            .slide-caption p { font-size: 0.85rem; }
+            .slide-arrow { width: 38px; height: 38px; font-size: 0.9rem; }
+            .slide-prev { left: 10px; }
+            .slide-next { right: 10px; }
+            #main-slideshow { height: 350px; }
+            .metric-value { font-size: 1.8rem; }
+            .metric-card { padding: 1.5rem; min-height: 150px; }
+        }
+    </style>
+
+    <script src="js/pm25.js"></script>
+    <script src="js/crowd.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // ===== Hero Carousel Controller =====
+        let heroIndex = 0;
+        const heroSlides = document.querySelectorAll('.hero-slide');
+        const heroDots = document.querySelectorAll('.hero-dot');
+
+        function goHeroSlide(idx) {
+            heroSlides.forEach(s => s.classList.remove('hero-slide-active'));
+            heroDots.forEach(d => d.classList.remove('hero-dot-active'));
+            heroIndex = idx;
+            heroSlides[heroIndex].classList.add('hero-slide-active');
+            heroDots[heroIndex].classList.add('hero-dot-active');
+        }
+
+        setInterval(() => {
+            goHeroSlide((heroIndex + 1) % heroSlides.length);
+        }, 4000);
+
+        // ===== Main Gallery Slideshow Controller =====
+        let slideIndex = 0;
+        const slides = document.querySelectorAll('.main-slide');
+        const totalSlides = slides.length;
+        const dotsContainer = document.getElementById('slide-dots');
+
+        // Generate dots
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('span');
+            dot.className = 'slide-dot' + (i === 0 ? ' slide-dot-active' : '');
+            dot.onclick = () => goToSlide(i);
+            dotsContainer.appendChild(dot);
+        }
+
+        function goToSlide(idx) {
+            slides.forEach(s => s.classList.remove('main-slide-active'));
+            document.querySelectorAll('.slide-dot').forEach(d => d.classList.remove('slide-dot-active'));
+            slideIndex = idx;
+            slides[slideIndex].classList.add('main-slide-active');
+            document.querySelectorAll('.slide-dot')[slideIndex].classList.add('slide-dot-active');
+            document.getElementById('slide-current').textContent = String(slideIndex + 1).padStart(2, '0');
+        }
+
+        function changeSlide(dir) {
+            let newIdx = slideIndex + dir;
+            if (newIdx >= totalSlides) newIdx = 0;
+            if (newIdx < 0) newIdx = totalSlides - 1;
+            goToSlide(newIdx);
+        }
+
+        // Auto-play: loop every 5 seconds
+        let slideTimer = setInterval(() => changeSlide(1), 5000);
+
+        // Pause on hover
+        const mainSlideshow = document.getElementById('main-slideshow');
+        if (mainSlideshow) {
+            mainSlideshow.addEventListener('mouseenter', () => clearInterval(slideTimer));
+            mainSlideshow.addEventListener('mouseleave', () => {
+                slideTimer = setInterval(() => changeSlide(1), 5000);
+            });
+        }
+
+        // Bespoke Interactions
+        document.addEventListener('DOMContentLoaded', () => {
+            // Reveal Intersection Observer
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+            // Navbar Scroll Effect
+            const nav = document.getElementById('main-nav');
+            if (nav) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 50) nav.classList.add('scrolled');
+                    else nav.classList.remove('scrolled');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
