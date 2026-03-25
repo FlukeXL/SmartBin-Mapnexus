@@ -749,8 +749,8 @@
                                     <div style="width: 6px; height: 6px; background: #fff; border-radius: 50%; animation: pulse-red 1s infinite;"></div> กำลังถ่ายทอดสด 
                                 </div>
                             </div>
-                            <div class="admin-map-wrapper">
-                                <div id="admin-map" style="height: 100%; width: 100%; z-index: 1;" data-key=""></div>
+                            <div class="admin-map-wrapper" style="height: 600px; width: 100%;">
+                                <div id="admin-map" style="height: 100%; width: 100%; z-index: 1; background: #f1f5f9;" data-key=""></div>
                             </div>
                             <div id="admin-route-hint" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); z-index:1000; padding:8px 15px; border-radius:20px; background:rgba(255,255,255,0.9); border:1px solid var(--primary-color); box-shadow:0 10px 25px rgba(0,0,0,0.1); pointer-events:none; transition: all 0.3s; font-size:0.85rem;">
                                 <span style="color:var(--text-main); font-weight:500;"><i class="fa-solid fa-hand-pointer text-primary"></i> <span id="admin-hint-text">จิ้มบนแผนที่เพื่อเริ่มตรวจสอบเส้นทาง</span></span>
@@ -945,124 +945,156 @@
                     </div>
                 </div>
 
-                <div class="charts-grid map-traffic-grid" style="gap: 2rem; margin-bottom: 2rem;">
-                    <!-- ตำแหน่งถังขยะเรียลไทม์ -->
-                    <div class="glass-panel" style="padding: 0; overflow: hidden; min-height: 500px; display: flex; flex-direction: column;">
-                        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                            <h3 style="margin: 0; color: var(--sc-primary);"><i class="fa-solid fa-map-location-dot"></i> ตำแหน่งถังขยะเรียลไทม์</h3>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div id="gps-ws-status" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; background: rgba(239,68,68,0.1); color: #ef4444; padding: 4px 10px; border-radius: 50px; font-weight: 700;">
-                                    <div style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%;"></div> GPS ยังไม่เชื่อมต่อ
-                                </div>
+                <!-- แผนที่ถังขยะ -->
+                <div class="glass-panel" style="padding: 0; overflow: hidden; margin-bottom: 2rem;">
+                    <div style="padding: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="margin: 0; color: var(--sc-primary);"><i class="fa-solid fa-map-location-dot"></i> ตำแหน่งถังขยะเรียลไทม์</h3>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div id="gps-ws-status" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; background: rgba(239,68,68,0.1); color: #ef4444; padding: 4px 10px; border-radius: 50px; font-weight: 700;">
+                                <div style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%;"></div> GPS ยังไม่เชื่อมต่อ
                             </div>
                         </div>
-                        <div id="bins-map" style="flex: 1; min-height: 400px; width: 100%;"></div>
                     </div>
-                    
-                    <!-- ทดสอบส่งข้อมูล Smart Bin อัตโนมัติ -->
-                    <div class="glass-panel" style="display: flex; flex-direction: column;">
-                        <h3 style="margin-bottom: 1.5rem; color: var(--sc-primary);"><i class="fa-solid fa-robot"></i> ระบบ AI อัตโนมัติ</h3>
+                    <div id="bins-map" style="height: 500px; width: 100%;"></div>
+                </div>
+
+                <!-- แถบควบคุมด้านล่างแผนที่ -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <!-- GPS Status -->
+                    <div class="glass-panel" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <i class="fa-solid fa-satellite-dish" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <div style="font-weight: 700; font-size: 1.1rem;">Smart Bin GPS Tracker</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">รับข้อมูลจาก ATGM336H-5N Module</div>
+                            </div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.8rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>📡 WebSocket:</span>
+                                <span id="ws-connection-status" style="font-weight: 700;">กำลังเชื่อมต่อ...</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>🗑️ ถังที่ติดตาม:</span>
+                                <span id="tracked-bins-count" style="font-weight: 700;">0 ถัง</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>📍 ตำแหน่งของคุณ:</span>
+                                <span id="user-location-status" style="font-weight: 700;">กำลังดึง...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Location Display -->
+                    <div class="glass-panel" style="padding: 1.5rem;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #0369a1; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-location-dot"></i> ตำแหน่ง GPS ของคุณ
+                        </h4>
+                        <div style="font-size: 0.75rem; color: #0c4a6e; line-height: 1.6;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>Latitude:</span>
+                                <span id="user-lat" style="font-weight: 700; font-family: monospace;">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>Longitude:</span>
+                                <span id="user-lng" style="font-weight: 700; font-family: monospace;">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>ความแม่นยำ:</span>
+                                <span id="user-accuracy" style="font-weight: 700;">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Demo Controls -->
+                    <div class="glass-panel" style="padding: 1.5rem;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-flask"></i> ทดสอบระบบ
+                        </h4>
                         
-                        <!-- Status Display -->
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; color: white;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                <i class="fa-solid fa-satellite-dish" style="font-size: 1.5rem;"></i>
-                                <div>
-                                    <div style="font-weight: 700; font-size: 1.1rem;">Smart Bin GPS Tracker</div>
-                                    <div style="font-size: 0.75rem; opacity: 0.9;">รับข้อมูลจาก ATGM336H-5N Module</div>
-                                </div>
-                            </div>
-                            <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.8rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                    <span>📡 WebSocket:</span>
-                                    <span id="ws-connection-status" style="font-weight: 700;">กำลังเชื่อมต่อ...</span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                    <span>🗑️ ถังที่ติดตาม:</span>
-                                    <span id="tracked-bins-count" style="font-weight: 700;">0 ถัง</span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span>📍 ตำแหน่งของคุณ:</span>
-                                    <span id="user-location-status" style="font-weight: 700;">กำลังดึง...</span>
-                                </div>
+                        <button onclick="showMyLocationOnMap()" style="
+                            width: 100%;
+                            padding: 12px 20px; border: none; border-radius: 10px;
+                            background: linear-gradient(135deg, #3b82f6, #2563eb);
+                            color: #fff; font-size: 0.85rem; font-weight: 700;
+                            cursor: pointer; transition: all 0.3s;
+                            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+                            display: flex; align-items: center; justify-content: center; gap: 8px;
+                            margin-bottom: 10px;
+                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                            <i class="fa-solid fa-location-crosshairs"></i> แสดงตำแหน่งของฉัน
+                        </button>
+
+                        <button onclick="loadSimulatorDemo()" style="
+                            width: 100%;
+                            padding: 12px 20px; border: none; border-radius: 10px;
+                            background: linear-gradient(135deg, #10b981, #059669);
+                            color: #fff; font-size: 0.85rem; font-weight: 700;
+                            cursor: pointer; transition: all 0.3s;
+                            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+                            display: flex; align-items: center; justify-content: center; gap: 8px;
+                            margin-bottom: 10px;
+                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                            <i class="fa-solid fa-flask"></i> โหลดข้อมูล Demo (6 ถัง)
+                        </button>
+
+                        <button onclick="clearAllBins()" style="
+                            width: 100%;
+                            padding: 10px 20px; border: 1px solid #e2e8f0; border-radius: 10px;
+                            background: white; color: #64748b; font-size: 0.8rem; font-weight: 600;
+                            cursor: pointer; transition: all 0.3s;
+                            display: flex; align-items: center; justify-content: center; gap: 8px;
+                            margin-bottom: 10px;
+                        " onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">
+                            <i class="fa-solid fa-trash"></i> ล้างข้อมูล
+                        </button>
+
+                        <button onclick="fetchBinsFromSupabase()" style="
+                            width: 100%;
+                            padding: 12px 20px; border: none; border-radius: 10px;
+                            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+                            color: #fff; font-size: 0.85rem; font-weight: 700;
+                            cursor: pointer; transition: all 0.3s;
+                            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+                            display: flex; align-items: center; justify-content: center; gap: 8px;
+                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> โหลดจาก Supabase
+                        </button>
+                    </div>
+
+                    <!-- Upload Image Form -->
+                    <div class="glass-panel" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(251,191,36,0.1), rgba(245,158,11,0.05));">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: #92400e; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-camera"></i> อัปโหลดรูปถังขยะ
+                        </h4>
+                        <input type="file" id="bin-image-upload" accept="image/*" 
+                               style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #fbbf24; border-radius: 8px; font-size: 0.8rem;">
+                        <input type="number" id="bin-id-for-upload" placeholder="Bin ID (เช่น 101)" 
+                               style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #fbbf24; border-radius: 8px; font-size: 0.8rem;">
+                        <button onclick="uploadBinImage()" style="
+                            width: 100%;
+                            padding: 10px 20px; border: none; border-radius: 10px;
+                            background: linear-gradient(135deg, #f59e0b, #d97706);
+                            color: #fff; font-size: 0.85rem; font-weight: 700;
+                            cursor: pointer; transition: all 0.3s;
+                            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+                            display: flex; align-items: center; justify-content: center; gap: 8px;
+                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                            <i class="fa-solid fa-upload"></i> อัปโหลดรูป
+                        </button>
+                    </div>
+
+                    <!-- Live Updates Log -->
+                    <div class="glass-panel" style="padding: 1.5rem;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-list"></i> อัปเดตล่าสุด
+                        </h4>
+                        <div id="gps-updates-log" style="font-size: 0.7rem; color: #64748b; display: flex; flex-direction: column; gap: 5px; max-height: 200px; overflow-y: auto;">
+                            <div style="text-align: center; padding: 2rem; opacity: 0.5;">
+                                <i class="fa-solid fa-satellite-dish" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                                รอข้อมูล GPS จาก Smart Bin...
                             </div>
                         </div>
-
-                        <!-- User Location Display -->
-                        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
-                            <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #0369a1; display: flex; align-items: center; gap: 8px;">
-                                <i class="fa-solid fa-location-dot"></i> ตำแหน่ง GPS ของคุณ
-                            </h4>
-                            <div style="font-size: 0.75rem; color: #0c4a6e; line-height: 1.6;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                    <span>Latitude:</span>
-                                    <span id="user-lat" style="font-weight: 700; font-family: monospace;">-</span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                    <span>Longitude:</span>
-                                    <span id="user-lng" style="font-weight: 700; font-family: monospace;">-</span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span>ความแม่นยำ:</span>
-                                    <span id="user-accuracy" style="font-weight: 700;">-</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Demo Controls -->
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
-                            <h4 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
-                                <i class="fa-solid fa-flask"></i> ทดสอบระบบ
-                            </h4>
-                            
-                            <button onclick="showMyLocationOnMap()" style="
-                                width: 100%;
-                                padding: 12px 20px; border: none; border-radius: 10px;
-                                background: linear-gradient(135deg, #3b82f6, #2563eb);
-                                color: #fff; font-size: 0.85rem; font-weight: 700;
-                                cursor: pointer; transition: all 0.3s;
-                                box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-                                display: flex; align-items: center; justify-content: center; gap: 8px;
-                                margin-bottom: 10px;
-                            " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-                                <i class="fa-solid fa-location-crosshairs"></i> แสดงตำแหน่งของฉันบนแผนที่
-                            </button>
-
-                            <button onclick="loadSimulatorDemo()" style="
-                                width: 100%;
-                                padding: 12px 20px; border: none; border-radius: 10px;
-                                background: linear-gradient(135deg, #10b981, #059669);
-                                color: #fff; font-size: 0.85rem; font-weight: 700;
-                                cursor: pointer; transition: all 0.3s;
-                                box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-                                display: flex; align-items: center; justify-content: center; gap: 8px;
-                                margin-bottom: 10px;
-                            " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-                                <i class="fa-solid fa-flask"></i> โหลดข้อมูล Demo (6 ถัง)
-                            </button>
-
-                            <button onclick="clearAllBins()" style="
-                                width: 100%;
-                                padding: 10px 20px; border: 1px solid #e2e8f0; border-radius: 10px;
-                                background: white; color: #64748b; font-size: 0.8rem; font-weight: 600;
-                                cursor: pointer; transition: all 0.3s;
-                                display: flex; align-items: center; justify-content: center; gap: 8px;
-                            " onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">
-                                <i class="fa-solid fa-trash"></i> ล้างข้อมูลทั้งหมด
-                            </button>
-                        </div>
-
-                        <!-- Live Updates Log -->
-                        <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; overflow-y: auto; max-height: 300px;">
-                            <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
-                                <i class="fa-solid fa-list"></i> อัปเดตล่าสุด
-                            </h4>
-                            <div id="gps-updates-log" style="font-size: 0.7rem; color: #64748b; display: flex; flex-direction: column; gap: 5px;">
-                                <div style="text-align: center; padding: 2rem; opacity: 0.5;">
-                                    <i class="fa-solid fa-satellite-dish" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
-                                    รอข้อมูล GPS จาก Smart Bin...
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1409,36 +1441,16 @@
                 showAdminSection('overview');
             }
 
-            try {
-                const configRes = await fetch('/api/stats/config');
-                const config = await configRes.json();
-                if (config.longdoKey) {
-                    document.getElementById('admin-map').setAttribute('data-key', config.longdoKey);
-                    if (window.initTrafficLayer) window.initTrafficLayer(config.longdoKey);
+            // ตรวจสอบว่าแผนที่โหลดแล้วหรือยัง
+            setTimeout(function() {
+                if (window.adminMap) {
+                    window.adminMap.invalidateSize();
+                    console.log('Map refreshed');
+                } else if (window.initAdminLeafletMap) {
+                    console.log('Map not found, initializing...');
+                    window.initAdminLeafletMap();
                 }
-
-                // Load Google Maps dynamically if key is available
-                if (config.googleMapsKey && config.googleMapsKey !== 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
-                    const script = document.createElement('script');
-                    script.src = `https://maps.googleapis.com/maps/api/js?key=${config.googleMapsKey}&libraries=places&callback=initAdminGoogleMap`;
-                    script.async = true;
-                    script.defer = true;
-                    // Before Google Maps loads, destroy Leaflet to free the container
-                    script.onload = function() {
-                        if (window._leafletAdminMap) {
-                            window._leafletAdminMap.remove();
-                            window._leafletAdminMap = null;
-                        }
-                    };
-                    document.head.appendChild(script);
-                } else {
-                    // Fallback: use OpenStreetMap via Leaflet (already loaded via admin-map.js)
-                    console.warn('Google Maps key not set, using Leaflet fallback');
-                    setTimeout(() => {
-                        if (window._leafletAdminMap) window._leafletAdminMap.invalidateSize();
-                    }, 500);
-                }
-            } catch (e) { console.warn('Config fetch error'); }
+            }, 500);
 
             try {
                 const pmRes = await fetch('/api/pm25');
@@ -1550,7 +1562,12 @@
             } else if (sectionId === 'waste-bins') {
                 if (title) title.innerText = 'ระบบถังขยะอัจฉริยะ (Smart Bins)';
                 if (sub) sub.innerText = 'ระบบติดตามถังขยะอัจฉริยะ GPS + Ultrasonic จ.นครพนม';
-                initWasteBinsDashboard();
+                
+                // โหลดแผนที่ทันที
+                setTimeout(() => {
+                    initWasteBinsDashboard();
+                    initBinsMapNow(); // เพิ่มฟังก์ชันนี้
+                }, 300);
             } else if (sectionId === 'activities') {
                 if (title) title.innerText = 'ติดตามกิจกรรมเมือง';
                 if (sub) sub.innerText = 'แผงจัดการกิจกรรมและความหนาแน่นรายพื้นที่';
@@ -1565,6 +1582,47 @@
             if (navWasteBins) navWasteBins.classList.toggle('active', sectionId === 'waste-bins');
             
             if (window.innerWidth <= 900) toggleAdminMenu();
+        }
+
+        // ฟังก์ชันสร้างแผนที่ถังขยะทันที
+        function initBinsMapNow() {
+            console.log('🗑️ Initializing bins map...');
+            
+            const mapEl = document.getElementById('bins-map');
+            if (!mapEl) {
+                console.error('❌ bins-map container not found');
+                return;
+            }
+
+            if (!window.binsMap) {
+                console.log('✅ Creating bins map...');
+                
+                window.binsMap = L.map('bins-map', { 
+                    zoomControl: true,
+                    scrollWheelZoom: true
+                }).setView([17.404, 104.789], 14);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap',
+                    maxZoom: 19
+                }).addTo(window.binsMap);
+
+                console.log('✅ Bins map created!');
+
+                // เพิ่ม marker ตัวอย่าง
+                L.marker([17.404, 104.789])
+                    .addTo(window.binsMap)
+                    .bindPopup('<b>นครพนม</b><br>พื้นที่ถังขยะ')
+                    .openPopup();
+
+                setTimeout(() => {
+                    window.binsMap.invalidateSize();
+                    console.log('✅ Bins map size fixed');
+                }, 500);
+            } else {
+                window.binsMap.invalidateSize();
+                console.log('✅ Bins map refreshed');
+            }
         }
 
         // ===== SMART WASTE BIN DASHBOARD =====
@@ -1630,8 +1688,9 @@
                     scrollWheelZoom: true
                 }).setView([17.404, 104.789], 14);
                 
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; OpenStreetMap & CartoDB',
+                // OpenStreetMap Tile Layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                     maxZoom: 19
                 }).addTo(binsMap);
 
@@ -2708,9 +2767,120 @@
                     }
                     // ดึงตำแหน่ง GPS อัตโนมัติ
                     getUserLocation();
+                    // ดึงข้อมูลจาก Supabase
+                    fetchBinsFromSupabase();
                 }, 500);
             }
         };
+
+        // ========================================
+        // SUPABASE INTEGRATION
+        // ========================================
+
+        // ดึงข้อมูลถังขยะจาก Supabase
+        async function fetchBinsFromSupabase() {
+            try {
+                const res = await fetch('/api/supabase-bins');
+                const bins = await res.json();
+                
+                if (!window.binsMap) return;
+                
+                // ลบ markers เก่า
+                if (window.binsMarkers) {
+                    window.binsMarkers.forEach(m => window.binsMap.removeLayer(m));
+                }
+                window.binsMarkers = [];
+                
+                // เพิ่ม markers ใหม่พร้อมรูปภาพ
+                bins.forEach(bin => {
+                    const fillColor = bin.fill_level >= 90 ? '#ef4444' : 
+                                     bin.fill_level >= 70 ? '#f59e0b' : '#10b981';
+                    
+                    // ใช้รูปจาก Supabase Storage
+                    const marker = L.marker([bin.lat, bin.lng], {
+                        icon: L.icon({
+                            iconUrl: bin.image_url,
+                            iconSize: [40, 40],
+                            iconAnchor: [20, 40],
+                            popupAnchor: [0, -40],
+                            className: 'bin-marker-icon'
+                        })
+                    }).addTo(window.binsMap);
+                    
+                    marker.bindPopup(`
+                        <div style="text-align: center; min-width: 200px;">
+                            <img src="${bin.image_url}" 
+                                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
+                            <h4 style="margin: 0 0 10px 0; color: ${fillColor};">
+                                <i class="fa-solid fa-trash-can"></i> ${bin.bin_name}
+                            </h4>
+                            <div style="text-align: left; font-size: 0.85rem;">
+                                <p style="margin: 5px 0;"><strong>ประเภท:</strong> ${bin.bin_type}</p>
+                                <p style="margin: 5px 0;"><strong>ปริมาณ:</strong> 
+                                    <span style="color: ${fillColor}; font-weight: 700;">${bin.fill_level}%</span>
+                                </p>
+                                <p style="margin: 5px 0;"><strong>สถานะ:</strong> ${bin.status}</p>
+                                <p style="margin: 5px 0;"><strong>ตำแหน่ง:</strong> ${bin.location_name || '-'}</p>
+                                <p style="margin: 5px 0; font-size: 0.75rem; color: #64748b;">
+                                    GPS: ${bin.lat}, ${bin.lng}
+                                </p>
+                            </div>
+                        </div>
+                    `);
+                    
+                    window.binsMarkers.push(marker);
+                });
+                
+                addGPSLog(`✅ โหลดข้อมูล ${bins.length} ถังจาก Supabase`, 'success');
+                
+            } catch (error) {
+                console.error('Error fetching bins from Supabase:', error);
+                addGPSLog(`❌ ไม่สามารถโหลดข้อมูลจาก Supabase: ${error.message}`, 'error');
+            }
+        }
+
+        // อัปโหลดรูปถังขยะ
+        async function uploadBinImage() {
+            const fileInput = document.getElementById('bin-image-upload');
+            const binIdInput = document.getElementById('bin-id-for-upload');
+            
+            if (!fileInput || !fileInput.files[0]) {
+                addGPSLog('❌ กรุณาเลือกรูปภาพ', 'error');
+                return;
+            }
+            
+            if (!binIdInput || !binIdInput.value) {
+                addGPSLog('❌ กรุณาระบุ Bin ID', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            
+            try {
+                addGPSLog('📤 กำลังอัปโหลดรูปภาพ...', 'info');
+                
+                const res = await fetch(`/api/supabase-bins/${binIdInput.value}/upload-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    addGPSLog(`✅ อัปโหลดรูปสำเร็จ! Bin ID: ${binIdInput.value}`, 'success');
+                    fileInput.value = '';
+                    binIdInput.value = '';
+                    
+                    // Refresh แผนที่
+                    setTimeout(() => fetchBinsFromSupabase(), 500);
+                } else {
+                    addGPSLog(`❌ อัปโหลดล้มเหลว: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                addGPSLog(`❌ เกิดข้อผิดพลาด: ${error.message}`, 'error');
+            }
+        }
     </script>
     <script src="js/pm25.js"></script>
     <script src="js/admin-map.js"></script>

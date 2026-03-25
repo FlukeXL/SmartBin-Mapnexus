@@ -37,6 +37,7 @@ const programRoutes     = require('./routes/program');
 const reviewRoutes      = require('./routes/review');
 const binsRoutes        = require('./routes/bins');
 const gpsRoutes         = require('./routes/gps');
+const supabaseBinsRoutes = require('./routes/supabase-bins');
 
 app.use('/api/pm25',             pm25Routes);
 app.use('/api/event',            eventRoutes);
@@ -54,6 +55,7 @@ app.use('/api/program',          programRoutes);
 app.use('/api/review',           reviewRoutes);
 app.use('/api/bins',             binsRoutes);
 app.use('/api/gps',              gpsRoutes);
+app.use('/api/supabase-bins',    supabaseBinsRoutes);
 
 // Client config keys
 app.get('/api/config/client-keys', (req, res) => {
