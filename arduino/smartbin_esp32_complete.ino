@@ -15,14 +15,13 @@
 #include <HTTPClient.h>
 #include <TinyGPS++.h>
 #include <ESP32Servo.h>
-#include <ArduinoJson.h>
 
 // ===== WiFi Configuration =====
-const char* ssid = "YOUR_WIFI_NAME";
-const char* password = "YOUR_WIFI_PASSWORD";
+const char* ssid = "YOUR_WIFI_NAME";        // เปลี่ยนเป็นชื่อ WiFi ของคุณ
+const char* password = "YOUR_WIFI_PASSWORD"; // เปลี่ยนเป็นรหัส WiFi ของคุณ
 
 // ===== Server Configuration =====
-const char* serverUrl = "http://192.168.1.100:3000/api/gps/update";
+const char* serverUrl = "http://192.168.1.100:3000/api/smartbin/1"; // เปลี่ยน IP เป็นของคุณ
 
 // ===== Bin Configuration =====
 const int BIN_ID = 1;
@@ -36,7 +35,7 @@ HardwareSerial GPS_Serial(2); // Serial2 (RX=16, TX=17)
 // ===== Ultrasonic Configuration =====
 const int TRIG_PIN = 5;
 const int ECHO_PIN = 18;
-const int BIN_HEIGHT = 100; // ความสูงถัง (cm)
+const int BIN_HEIGHT = 60; // ความสูงถัง (cm) - ระยะ Detect 60cm
 
 // ===== Servo Configuration =====
 Servo servoPlastic;  // Servo สำหรับ Plastic
@@ -49,8 +48,8 @@ const int SERVO_METAL_PIN = 13;
 const int SERVO_GLASS_PIN = 14;
 const int SERVO_PAPER_PIN = 27;
 
-const int SERVO_OPEN_ANGLE = 90;   // มุมเปิด
-const int SERVO_CLOSE_ANGLE = 0;   // มุมปิด
+const int SERVO_OPEN_ANGLE = 180;  // มุมเปิด (180 องศา - เปิดเต็มที่)
+const int SERVO_CLOSE_ANGLE = 0;   // มุมปิด (0 องศา)
 const int SERVO_OPEN_TIME = 3000;  // เวลาเปิด (ms)
 
 // ===== Jetson Communication =====
@@ -96,6 +95,8 @@ void setup() {
   connectWiFi();
   
   Serial.println("✅ ระบบพร้อมทำงาน\n");
+  Serial.println("📍 Ultrasonic: วัดระยะ 60cm");
+  Serial.println("📍 GPS: รอสัญญาณดาวเทียม...\n");
 }
 
 void loop() {
@@ -121,8 +122,11 @@ void loop() {
     if (currentTime - lastGPSSendTime >= GPS_SEND_INTERVAL) {
       lastGPSSendTime = currentTime;
       
-      // อ่านระดับขยะ
+      // อ่านระดับขยะจาก Ultrasonic
       currentFillLevel = readFillLevel();
+      
+      // แสดงข้อมูล GPS และระดับขยะ
+      printGPSData();
       
       // ส่งข้อมูลไปยัง Server
       sendDataToServer();
@@ -131,8 +135,22 @@ void loop() {
   
   // 4. ตรวจสอบสถานะ GPS
   if (millis() > 5000 && gps.charsProcessed() < 10) {
-    Serial.println("⚠️ ไม่พบสัญญาณ GPS");
-    delay(1000);
+    Serial.println("⚠️ ไม่พบสัญญาณ GPS - ตรวจสอบการต่อสาย");
+    delay(2000);
+  }
+  
+  // 5. แสดงจำนวนดาวเทียมและระดับขยะ
+  static unsigned long lastStatusPrint = 0;
+  if (millis() - lastStatusPrint > 3000) {
+    lastStatusPrint = millis();
+    if (gps.satellites.isValid()) {
+      Serial.print("🛰️  ดาวเทียม: ");
+      Serial.print(gps.satellites.value());
+      Serial.print(" ดวง | ");
+    }
+    Serial.print("🗑️  ระดับขยะ: ");
+    Serial.print(readFillLevel());
+    Serial.println("%");
   }
 }
 
@@ -240,6 +258,36 @@ void connectWiFi() {
     wifiConnected = false;
     Serial.println("\n❌ เชื่อมต่อ WiFi ไม่สำเร็จ");
   }
+  Serial.println();
+}
+
+// ===== ฟังก์ชันแสดงข้อมูล GPS =====
+void printGPSData() {
+  Serial.println("╔════════════════════════════════════════╗");
+  Serial.println("║         📍 ข้อมูลระบบ                  ║");
+  Serial.println("╠════════════════════════════════════════╣");
+  
+  Serial.print("║ Latitude:  ");
+  Serial.print(currentLat, 8);
+  Serial.println("        ║");
+  
+  Serial.print("║ Longitude: ");
+  Serial.print(currentLng, 8);
+  Serial.println("        ║");
+  
+  Serial.print("║ ดาวเทียม:  ");
+  Serial.print(satelliteCount);
+  Serial.println(" ดวง                      ║");
+  
+  Serial.print("║ ระดับขยะ: ");
+  Serial.print(currentFillLevel);
+  Serial.println("%                       ║");
+  
+  Serial.print("║ ความเร็ว:  ");
+  Serial.print(gps.speed.kmph(), 1);
+  Serial.println(" km/h                 ║");
+  
+  Serial.println("╚════════════════════════════════════════╝\n");
 }
 
 // ===== ฟังก์ชันส่งข้อมูลไปยัง Server =====
@@ -254,40 +302,37 @@ void sendDataToServer() {
   http.begin(serverUrl);
   http.addHeader("Content-Type", "application/json");
   
-  // สร้าง JSON
-  StaticJsonDocument<512> doc;
-  doc["bin_id"] = BIN_ID;
-  doc["bin_name"] = BIN_NAME;
-  doc["lat"] = currentLat;
-  doc["lng"] = currentLng;
-  doc["fill_level"] = currentFillLevel;
-  doc["location_name"] = LOCATION_NAME;
-  doc["satellites"] = satelliteCount;
-  doc["speed"] = gps.speed.kmph();
-  doc["temperature"] = 32.5; // ถ้ามี sensor อุณหภูมิ
-  doc["battery_level"] = 95;  // ถ้ามี sensor แบตเตอรี่
+  // สร้าง JSON สำหรับ PUT request
+  String jsonData = "{";
+  jsonData += "\"latitude\":" + String(currentLat, 8) + ",";
+  jsonData += "\"longitude\":" + String(currentLng, 8) + ",";
+  jsonData += "\"fill_level\":" + String(currentFillLevel) + ",";
+  jsonData += "\"status\":\"active\",";
+  jsonData += "\"temperature\":32.5,";
+  jsonData += "\"battery_level\":95";
+  jsonData += "}";
   
-  // สถิติการทิ้งขยะ
-  JsonObject waste = doc.createNestedObject("waste_stats");
-  waste["plastic"] = wasteCount[0];
-  waste["metal"] = wasteCount[1];
-  waste["glass"] = wasteCount[2];
-  waste["paper"] = wasteCount[3];
+  Serial.println("📤 ส่งข้อมูลไป Server...");
+  Serial.println("   " + jsonData);
   
-  String jsonData;
-  serializeJson(doc, jsonData);
-  
-  Serial.println("📤 ส่งข้อมูล: " + jsonData);
-  
-  int httpResponseCode = http.POST(jsonData);
+  int httpResponseCode = http.PUT(jsonData);
   
   if (httpResponseCode > 0) {
-    Serial.print("✅ ส่งสำเร็จ - Code: ");
+    Serial.print("✅ ส่งสำเร็จ! Response Code: ");
     Serial.println(httpResponseCode);
+    
+    if (httpResponseCode == 200) {
+      String response = http.getString();
+      Serial.println("📥 Response: " + response);
+    }
   } else {
-    Serial.print("❌ ส่งไม่สำเร็จ - Error: ");
+    Serial.print("❌ ส่งไม่สำเร็จ! Error Code: ");
     Serial.println(httpResponseCode);
+    Serial.println("   ตรวจสอบ:");
+    Serial.println("   - Server รันอยู่หรือไม่");
+    Serial.println("   - IP Address ถูกต้องหรือไม่");
   }
   
   http.end();
+  Serial.println("─────────────────────────────────────────\n");
 }

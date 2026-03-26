@@ -64,23 +64,48 @@ class SmartBin {
 
     static async update(id, binData) {
         try {
+            // ดึงข้อมูลเดิมก่อน
+            const existingBin = await this.getById(id);
+            if (!existingBin) {
+                throw new Error('Smart bin not found');
+            }
+
+            // รองรับทั้ง latitude/longitude และ lat/lng
+            const lat = binData.latitude || binData.lat || existingBin.lat;
+            const lng = binData.longitude || binData.lng || existingBin.lng;
+
+            // Merge ข้อมูลเดิมกับข้อมูลใหม่
+            const updatedData = {
+                name: binData.name || existingBin.name,
+                location_name: binData.location_name || existingBin.location_name,
+                lat: parseFloat(lat),
+                lng: parseFloat(lng),
+                bin_type: binData.bin_type || existingBin.bin_type,
+                capacity: binData.capacity || existingBin.capacity,
+                fill_level: binData.fill_level !== undefined ? binData.fill_level : existingBin.fill_level,
+                status: binData.status || existingBin.status,
+                temperature: binData.temperature !== undefined ? binData.temperature : existingBin.temperature,
+                battery_level: binData.battery_level !== undefined ? binData.battery_level : existingBin.battery_level
+            };
+
             await pool.query(
                 'UPDATE smart_bins SET name = ?, location_name = ?, lat = ?, lng = ?, bin_type = ?, capacity = ?, fill_level = ?, status = ?, temperature = ?, battery_level = ? WHERE id = ?',
                 [
-                    binData.name,
-                    binData.location_name,
-                    parseFloat(binData.lat),
-                    parseFloat(binData.lng),
-                    binData.bin_type,
-                    binData.capacity,
-                    binData.fill_level,
-                    binData.status,
-                    binData.temperature,
-                    binData.battery_level,
+                    updatedData.name,
+                    updatedData.location_name,
+                    updatedData.lat,
+                    updatedData.lng,
+                    updatedData.bin_type,
+                    updatedData.capacity,
+                    updatedData.fill_level,
+                    updatedData.status,
+                    updatedData.temperature,
+                    updatedData.battery_level,
                     id
                 ]
             );
-            return { id, ...binData };
+            
+            return { id, ...updatedData };
         } catch (error) {
             console.error("Error updating smart bin:", error);
             throw error;

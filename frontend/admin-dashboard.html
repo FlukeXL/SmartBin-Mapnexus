@@ -1741,7 +1741,10 @@
 
         function renderBinsMap(bins) {
             const mapEl = document.getElementById('bins-map');
-            if (!mapEl) return;
+            if (!mapEl) {
+                console.error('❌ bins-map element not found');
+                return;
+            }
 
             // ใช้ binsMap ที่สร้างไว้แล้วจาก initBinsMapNow()
             if (!window.binsMap) {
@@ -1752,11 +1755,15 @@
                 return;
             }
 
+            console.log('📍 Rendering bins on map:', bins.length, 'bins');
+            console.log('📍 First bin:', bins[0]);
+
             // Clear existing markers
             binsMarkers.forEach(m => window.binsMap.removeLayer(m));
             binsMarkers = [];
 
             bins.forEach(bin => {
+                console.log('📍 Adding marker for bin:', bin.bin_name, 'at', bin.lat, bin.lng);
                 const color = bin.fillColor || (bin.status === 'full' ? '#ef4444' : bin.status === 'almost_full' ? '#f59e0b' : bin.status === 'empty' ? '#94a3b8' : '#10b981');
                 const typeLabel = bin.typeLabel || bin.bin_type;
                 const statusLabel = bin.statusLabel || bin.status;

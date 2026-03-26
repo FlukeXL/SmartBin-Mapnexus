@@ -17,12 +17,19 @@ import pycuda.autoinit
 
 # ===== การตั้งค่า =====
 CAMERA_ID = 0  # กล้อง Rapoo (ปรับตาม USB port)
-SERIAL_PORT = '/dev/ttyTHS1'  # UART ไปยัง ESP32
+SERIAL_PORT = '/dev/ttyTHS0'  # UART1 (Pin 8, 10) ไปยัง ESP32
 SERIAL_BAUD = 115200
 MODEL_PATH = 'models/best.engine'  # TensorRT Engine
 CONFIDENCE_THRESHOLD = 0.5
 BIN_ID = 1
 BIN_NAME = "ถังขยะอัจฉริยะ #001"
+
+# หมายเหตุ: 
+# - Jetson Pin 8 (TXD) → ESP32 GPIO 25 (RX)
+# - Jetson Pin 10 (RXD) → ESP32 GPIO 26 (TX)
+# - Jetson Pin 6 (GND) → ESP32 GND
+# - Ultrasonic Sensor (60cm) อยู่ที่ ESP32
+# - Jetson ทำหน้าที่ตรวจจับขยะและส่งคำสั่งเปิดฝาเท่านั้น
 
 # ประเภทขยะ
 WASTE_CLASSES = {
