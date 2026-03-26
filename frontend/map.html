@@ -119,6 +119,11 @@
         </aside>
 
         <div id="map-container" class="glass-panel" style="flex:1; width:100%; height: 550px; padding:0; border:1px solid rgba(255,255,255,0.4); box-shadow: 0 15px 35px rgba(0,0,0,0.1); position:relative; z-index:10; overflow:hidden;">
+            <!-- Mockup Overlay (Content loaded from database) -->
+            <div id="map-mockup-overlay" class="map-mockup-overlay">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+            
             <div id="map-loading-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(240,244,248,0.8); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity 0.5s;">
                 <i class="fa-solid fa-map-location-dot fa-bounce" style="font-size: 3rem; color: var(--primary-color);"></i>
                 <p style="margin-top: 1.5rem; color: var(--primary-color); font-weight: 500;">กำลังจัดเตรียมแผนที่พรีเมียม...</p>

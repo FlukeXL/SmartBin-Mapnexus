@@ -3,8 +3,12 @@ var routeControl;
 var userLocation = [17.4045, 104.7933]; // Default Nakhon Phanom Center
 var manualPoints = [];
 var tempMarkers = [];
+var smartBinMarkers = []; // เก็บ marker ของถังขยะ
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Load and show mockup from database
+    loadMockupFromDatabase();
+    
     // Wait for everything to settle
     setTimeout(function() {
         initMap();
@@ -12,8 +16,83 @@ document.addEventListener('DOMContentLoaded', function() {
         // Initial render with static places, then fetch from backend
         renderPlaces();
         fetchPlaces();
+        // Load smart bins from database
+        loadSmartBins();
     }, 1200);
 });
+
+async function loadMockupFromDatabase() {
+    try {
+        const response = await fetch('/api/mockup');
+        if (response.ok) {
+            const mockupData = await response.json();
+            renderMockup(mockupData);
+            showMockupIfFirstVisit();
+        }
+    } catch (error) {
+        console.error('Error loading mockup:', error);
+        // Use default mockup if API fails
+        showMockupIfFirstVisit();
+    }
+}
+
+function renderMockup(data) {
+    const mockupOverlay = document.getElementById('map-mockup-overlay');
+    if (!mockupOverlay) return;
+
+    const featuresHTML = data.features.map(feature => `
+        <div class="mockup-feature">
+            <i class="fa-solid ${feature.icon}"></i>
+            <span>${feature.text}</span>
+        </div>
+    `).join('');
+
+    const mockupContent = `
+        <div class="mockup-content">
+            <div class="mockup-header">
+                <i class="fa-solid ${data.icon}"></i>
+                <h3>${data.title}</h3>
+                ${data.description ? `<p style="margin-top: 0.5rem; opacity: 0.9;">${data.description}</p>` : ''}
+            </div>
+            <div class="mockup-features">
+                ${featuresHTML}
+            </div>
+            <button class="mockup-close-btn" onclick="closeMockup()">
+                <i class="fa-solid fa-xmark"></i> ปิดตัวอย่าง
+            </button>
+        </div>
+    `;
+
+    mockupOverlay.innerHTML = mockupContent;
+}
+
+function showMockupIfFirstVisit() {
+    const hasSeenMockup = localStorage.getItem('hasSeenMapMockup');
+    if (!hasSeenMockup) {
+        setTimeout(function() {
+            const mockup = document.getElementById('map-mockup-overlay');
+            if (mockup) {
+                mockup.classList.add('active');
+            }
+        }, 2000);
+    }
+}
+
+function closeMockup() {
+    const mockup = document.getElementById('map-mockup-overlay');
+    if (mockup) {
+        mockup.classList.remove('active');
+        localStorage.setItem('hasSeenMapMockup', 'true');
+    }
+}
+
+// Optional: Show mockup manually (for testing or button trigger)
+function showMockup() {
+    const mockup = document.getElementById('map-mockup-overlay');
+    if (mockup) {
+        mockup.classList.add('active');
+    }
+}
 
 async function fetchPlaces() {
     try {
@@ -312,3 +391,207 @@ function updateMapTrafficInfo() {
 
 updateMapTrafficInfo();
 setInterval(updateMapTrafficInfo, 5000); // 5s refresh
+
+// Load Smart Bins from Database
+async function loadSmartBins() {
+    try {
+        const response = await fetch('/api/smartbin');
+        if (response.ok) {
+            const bins = await response.json();
+            renderSmartBins(bins);
+        }
+    } catch (error) {
+        console.error('Error loading smart bins:', error);
+    }
+}
+
+function renderSmartBins(bins) {
+    // Clear existing markers
+    smartBinMarkers.forEach(marker => map.removeLayer(marker));
+    smartBinMarkers = [];
+
+    bins.forEach(bin => {
+        addSmartBinMarker(bin);
+    });
+
+    console.log(`Loaded ${bins.length} smart bins on map`);
+}
+
+function addSmartBinMarker(bin) {
+    // กำหนดสีตามระดับความเต็ม
+    let color = '#10b981'; // เขียว (ว่าง)
+    if (bin.fill_level >= 90) {
+        color = '#ef4444'; // แดง (เต็ม)
+    } else if (bin.fill_level >= 70) {
+        color = '#f59e0b'; // ส้ม (ใกล้เต็ม)
+    } else if (bin.fill_level >= 50) {
+        color = '#fbbf24'; // เหลือง (ครึ่งหนึ่ง)
+    }
+
+    // กำหนดไอคอนตามประเภทถังขยะ
+    let binIcon = 'fa-trash-can';
+    if (bin.bin_type === 'recycle') {
+        binIcon = 'fa-recycle';
+    } else if (bin.bin_type === 'organic') {
+        binIcon = 'fa-leaf';
+    } else if (bin.bin_type === 'hazardous') {
+        binIcon = 'fa-biohazard';
+    }
+
+    const marker = L.marker([bin.lat, bin.lng], {
+        icon: L.divIcon({
+            className: 'smart-bin-marker',
+            html: `
+                <div style="position: relative;">
+                    <div style="
+                        background: ${color};
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                        border: 3px solid white;
+                    ">
+                        <i class="fa-solid ${binIcon}" style="color: white; font-size: 1.2rem;"></i>
+                    </div>
+                    <div style="
+                        position: absolute;
+                        top: -8px;
+                        right: -8px;
+                        background: white;
+                        color: ${color};
+                        font-size: 0.7rem;
+                        font-weight: bold;
+                        padding: 2px 6px;
+                        border-radius: 10px;
+                        border: 2px solid ${color};
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    ">${bin.fill_level}%</div>
+                </div>
+            `,
+            iconSize: [40, 40],
+            iconAnchor: [20, 40]
+        })
+    }).addTo(map);
+
+    // Popup content
+    const binTypeText = {
+        'general': 'ทั่วไป',
+        'recycle': 'รีไซเคิล',
+        'organic': 'อินทรีย์',
+        'hazardous': 'อันตราย'
+    };
+
+    const statusText = {
+        'active': 'ใช้งานได้',
+        'full': 'เต็มแล้ว',
+        'maintenance': 'ซ่อมบำรุง',
+        'inactive': 'ไม่ใช้งาน'
+    };
+
+    const popupContent = `
+        <div style="min-width: 200px;">
+            <h4 style="margin: 0 0 10px 0; color: ${color};">
+                <i class="fa-solid ${binIcon}"></i> ${bin.name}
+            </h4>
+            <p style="margin: 5px 0; color: #666;">
+                <i class="fa-solid fa-location-dot"></i> ${bin.location_name || 'ไม่ระบุสถานที่'}
+            </p>
+            <div style="margin: 10px 0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>ประเภท:</span>
+                    <strong>${binTypeText[bin.bin_type] || bin.bin_type}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>ระดับขยะ:</span>
+                    <strong style="color: ${color};">${bin.fill_level}%</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>สถานะ:</span>
+                    <strong>${statusText[bin.status] || bin.status}</strong>
+                </div>
+            </div>
+            <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 10px; overflow: hidden; margin-top: 10px;">
+                <div style="width: ${bin.fill_level}%; height: 100%; background: ${color}; transition: width 0.3s;"></div>
+            </div>
+        </div>
+    `;
+
+    marker.bindPopup(popupContent);
+    marker.binData = bin; // เก็บข้อมูลไว้ใน marker
+    smartBinMarkers.push(marker);
+}
+
+// Update existing marker or add new one
+function updateSmartBinMarker(binData) {
+    // หา marker ที่มี id ตรงกัน
+    const existingMarker = smartBinMarkers.find(m => m.binData && m.binData.id === binData.id);
+    
+    if (existingMarker) {
+        // อัปเดต marker ที่มีอยู่
+        map.removeLayer(existingMarker);
+        const index = smartBinMarkers.indexOf(existingMarker);
+        smartBinMarkers.splice(index, 1);
+    }
+    
+    // เพิ่ม marker ใหม่
+    addSmartBinMarker(binData);
+    
+    console.log(`Smart bin ${binData.name} updated on map`);
+}
+
+// WebSocket for Real-time Updates
+function connectSmartBinWebSocket() {
+    const wsUrl = `ws://${location.host}/ws`;
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+        console.log('[SmartBin-WS] Connected for real-time updates');
+    };
+    
+    ws.onmessage = (event) => {
+        try {
+            const msg = JSON.parse(event.data);
+            
+            // รับข้อมูล smart bin update
+            if (msg.type === 'smartbin_update') {
+                updateSmartBinMarker(msg.data);
+            }
+            // รับข้อมูล smart bin ใหม่
+            else if (msg.type === 'smartbin_new') {
+                addSmartBinMarker(msg.data);
+            }
+            // รับข้อมูลลบ smart bin
+            else if (msg.type === 'smartbin_delete') {
+                const marker = smartBinMarkers.find(m => m.binData && m.binData.id === msg.data.id);
+                if (marker) {
+                    map.removeLayer(marker);
+                    const index = smartBinMarkers.indexOf(marker);
+                    smartBinMarkers.splice(index, 1);
+                    console.log(`Smart bin #${msg.data.id} removed from map`);
+                }
+            }
+        } catch (e) {
+            console.warn('[SmartBin-WS] Parse error', e);
+        }
+    };
+    
+    ws.onclose = () => {
+        console.log('[SmartBin-WS] Disconnected. Reconnecting in 5s...');
+        setTimeout(connectSmartBinWebSocket, 5000);
+    };
+    
+    ws.onerror = (err) => {
+        console.error('[SmartBin-WS] Error', err);
+    };
+}
+
+// เริ่มต้น WebSocket connection
+setTimeout(() => {
+    connectSmartBinWebSocket();
+}, 2000);
+
+// Refresh smart bins every 30 seconds (backup)
+setInterval(loadSmartBins, 30000);

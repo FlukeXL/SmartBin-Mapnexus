@@ -106,6 +106,20 @@ CREATE TABLE `ai_requests` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 8. ตาราง Map Mockups
+DROP TABLE IF EXISTS `map_mockups`;
+CREATE TABLE `map_mockups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL COMMENT 'หัวข้อ mockup',
+  `description` text COMMENT 'คำอธิบาย',
+  `icon` varchar(100) DEFAULT 'fa-map-location-dot' COMMENT 'Font Awesome icon class',
+  `features` text COMMENT 'ฟีเจอร์ต่างๆ (JSON format)',
+  `is_active` tinyint(1) DEFAULT 1 COMMENT 'เปิดใช้งาน',
+  `display_order` int(11) DEFAULT 0 COMMENT 'ลำดับการแสดง',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
@@ -126,3 +140,10 @@ INSERT INTO `events` (`title`, `description`, `type`)
 VALUES
   ('เทศกาลไหลเรือไฟ', 'งานประเพณีไหลเรือไฟนครพนม', 'festival'),
   ('วันออกพรรษา', 'กิจกรรมทางศาสนา', 'cultural');
+
+INSERT INTO `map_mockups` (`title`, `description`, `icon`, `features`, `is_active`, `display_order`)
+VALUES
+  ('ตัวอย่างแผนที่อัจฉริยะ', 'ระบบแผนที่ดิจิทัลสำหรับนครพนม', 'fa-map-location-dot', 
+   '[{"icon":"fa-route","text":"นำทางเส้นทางอัจฉริยะ"},{"icon":"fa-traffic-light","text":"ข้อมูลจราจรแบบเรียลไทม์"},{"icon":"fa-location-dot","text":"สถานที่ท่องเที่ยวยอดนิยม"}]', 
+   1, 1);
+

@@ -38,6 +38,7 @@ const reviewRoutes      = require('./routes/review');
 const binsRoutes        = require('./routes/bins');
 const gpsRoutes         = require('./routes/gps');
 const supabaseBinsRoutes = require('./routes/supabase-bins');
+const smartbinRoutes    = require('./routes/smartbin');
 
 app.use('/api/pm25',             pm25Routes);
 app.use('/api/event',            eventRoutes);
@@ -56,6 +57,7 @@ app.use('/api/review',           reviewRoutes);
 app.use('/api/bins',             binsRoutes);
 app.use('/api/gps',              gpsRoutes);
 app.use('/api/supabase-bins',    supabaseBinsRoutes);
+app.use('/api/smartbin',         smartbinRoutes);
 
 // Client config keys
 app.get('/api/config/client-keys', (req, res) => {
@@ -163,13 +165,24 @@ wss.on('connection', (ws, req) => {
     ws.on('close', () => console.log('[WS] Client disconnected'));
 });
 
-// ส่ง WebSocket server เข้าไปใน GPS route
+// ส่ง WebSocket server เข้าไปใน GPS route และ SmartBin route
 gpsRoutes.setWebSocketServer(wss);
+smartbinRoutes.setWebSocketServer(wss);
+
+// เก็บ wsClients ไว้ใน global เพื่อให้ API routes อื่นๆ ใช้ได้
+global.wsClients = [];
+wss.on('connection', (ws) => {
+    global.wsClients.push(ws);
+    ws.on('close', () => {
+        global.wsClients = global.wsClients.filter(client => client !== ws);
+    });
+});
 
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`================================================`);
     console.log(`🚀 SmartMap Server (GPS Edition) running!`);
     console.log(`🏠 Local:    http://localhost:${PORT}`);
     console.log(`🛰️  GPS WS:  ws://localhost:${PORT}/ws`);
+    console.log(`🗑️  SmartBin API: http://localhost:${PORT}/api/smartbin`);
     console.log(`================================================`);
 });
