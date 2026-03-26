@@ -23,4 +23,16 @@ const cityPool = mysql.createPool({
     queueLimit: 0
 });
 
-module.exports = { appPool, cityPool };
+// Database 3: Smart Bin data (smart bins, collection history, alerts, statistics)
+const smartbinPool = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_SMARTBIN_NAME || 'nakhonphanom_smartbin',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
+module.exports = { appPool, cityPool, smartbinPool };
+

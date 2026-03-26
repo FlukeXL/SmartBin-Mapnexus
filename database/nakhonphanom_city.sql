@@ -48,6 +48,7 @@ CREATE TABLE `waste_bins` (
   `status` enum('empty', 'normal', 'almost_full', 'full') DEFAULT 'empty',
   `location_name` varchar(150) DEFAULT NULL COMMENT 'ชื่อตำแหน่ง',
   `gps_module` varchar(50) DEFAULT 'ATGM336H-5N',
+  `image_url` varchar(500) DEFAULT NULL COMMENT 'URL รูปถังขยะจาก Supabase Storage',
   `last_update` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -91,7 +92,7 @@ CREATE TABLE `electricity_usage` (
 -- 7. ตาราง AI Logs (City Intelligence)
 DROP TABLE IF EXISTS `ai_logs`;
 CREATE TABLE `ai_logs` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,  เทคโนโลยี
   `log_type` varchar(50) NOT NULL,
   `input_data` text,
   `prediction_result` text,

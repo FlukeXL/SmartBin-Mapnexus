@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/elegant-theme.css">
     <link rel="stylesheet" href="css/smart-city-nexus.css">
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
 
         .elegant-pattern {
@@ -183,7 +186,7 @@
                 left: 0;
                 top: 0;
                 height: 100vh;
-                width: 300px;
+                width: 280px;
                 background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
                 z-index: 2000;
                 transition: transform 0.5s var(--ease-out-expo), visibility 0.5s;
@@ -198,14 +201,71 @@
                 transform: translateX(0); 
                 visibility: visible;
             }
-            .admin-content { padding: 1rem; width: 100% !important; overflow-x: hidden; }
-            .dashboard-header { flex-direction: column !important; align-items: flex-start !important; padding: 1rem 0 !important; margin-bottom: 2rem !important; }
-            .dashboard-header h1 { font-size: 1.8rem !important; line-height: 1.2 !important; word-wrap: break-word !important; width: 100% !important; margin: 0 !important; color: var(--sc-primary) !important;}
+            .admin-content { 
+                margin-left: 0 !important;
+                padding: 1rem !important; 
+                width: 100% !important; 
+                overflow-x: hidden; 
+                min-height: calc(100vh - 70px);
+            }
+            .dashboard-header { 
+                flex-direction: column !important; 
+                align-items: flex-start !important; 
+                padding: 0.5rem 0 !important; 
+                margin-bottom: 1.5rem !important; 
+            }
+            .dashboard-header h1 { 
+                font-size: 1.5rem !important; 
+                line-height: 1.3 !important; 
+                word-wrap: break-word !important; 
+                width: 100% !important; 
+                margin: 0 0 0.5rem 0 !important; 
+                color: var(--sc-primary) !important;
+            }
+            .dashboard-header p {
+                font-size: 0.85rem !important;
+                line-height: 1.4 !important;
+            }
             .management-grid {
                 grid-template-columns: 1fr !important;
-                gap: 1.5rem;
+                gap: 1rem !important;
             }
-            .mgmt-card { height: auto !important; padding: 1.5rem !important; border-radius: 15px !important; }
+            .mgmt-card { 
+                height: auto !important; 
+                padding: 1.2rem !important; 
+                border-radius: 12px !important; 
+            }
+            .mgmt-card h3 {
+                font-size: 0.95rem !important;
+                margin-bottom: 1rem !important;
+            }
+            #analytics-map-container {
+                height: 350px !important;
+            }
+        }
+
+        /* แผนที่ */
+        #analytics-map-container {
+            width: 100%;
+            height: 450px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .map-user-marker {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+            animation: pulse-marker 2s infinite;
+        }
+
+        @keyframes pulse-marker {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
         }
     </style>
 </head>
@@ -295,6 +355,31 @@
                         style="color: var(--text-muted); font-size: 0.75rem; margin-top: 5px; opacity: 0.7;"></p>
                 </div>
             </div>
+
+            <!-- แผนที่แสดงตำแหน่ง GPS -->
+            <div class="management-grid" style="grid-template-columns: 1fr;">
+                <div class="mgmt-card glass-panel hover-lift" style="padding: 0; overflow: hidden;">
+                    <div style="padding: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                        <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-map-location-dot" style="color: var(--primary-color);"></i>
+                            <span>แผนที่ตำแหน่งของคุณ (GPS)</span>
+                        </h3>
+                        <p style="margin: 8px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-satellite-dish"></i> ระบบจะแสดงตำแหน่ง GPS จากอุปกรณ์ของคุณ
+                        </p>
+                    </div>
+                    <div id="analytics-map-container"></div>
+                    <div style="padding: 1rem; background: #f8fafc; border-top: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-location-dot"></i> 
+                            <span id="gps-coords">กำลังดึงตำแหน่ง...</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-crosshairs"></i> ความแม่นยำ: <span id="gps-accuracy">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="management-grid" style="grid-template-columns: 1fr;">
                 <div class="mgmt-card glass-panel hover-lift" style="height: 350px; display: flex; flex-direction: column;">
@@ -345,7 +430,141 @@
         Chart.defaults.font.family = 'Kanit';
         Chart.defaults.color = '#6b7a90';
 
-        // Water Level Logic
+        // ========================================
+        // GPS MAP INITIALIZATION
+        // ========================================
+        let analyticsMap = null;
+        let userMarker = null;
+
+        function initAnalyticsMap() {
+            console.log('Initializing analytics map...');
+            
+            const mapContainer = document.getElementById('analytics-map-container');
+            if (!mapContainer) {
+                console.error('Map container not found');
+                return;
+            }
+
+            // สร้างแผนที่
+            analyticsMap = L.map('analytics-map-container', {
+                center: [17.399132304743105, 104.72141688626819],
+                zoom: 14,
+                zoomControl: true
+            });
+
+            // เพิ่ม OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(analyticsMap);
+
+            console.log('Map initialized successfully');
+
+            // ดึงตำแหน่ง GPS
+            getUserLocation();
+
+            // Fix map size
+            setTimeout(() => {
+                analyticsMap.invalidateSize();
+            }, 100);
+        }
+
+        function getUserLocation() {
+            if (!navigator.geolocation) {
+                document.getElementById('gps-coords').innerText = 'เบราว์เซอร์ไม่รองรับ GPS';
+                return;
+            }
+
+            document.getElementById('gps-coords').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังดึงตำแหน่ง...';
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const accuracy = Math.round(position.coords.accuracy);
+
+                    console.log('GPS Position:', lat, lng, 'Accuracy:', accuracy);
+
+                    // อัปเดตข้อความ
+                    document.getElementById('gps-coords').innerText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    document.getElementById('gps-accuracy').innerText = `±${accuracy} เมตร`;
+
+                    // ลบ marker เก่า
+                    if (userMarker) {
+                        analyticsMap.removeLayer(userMarker);
+                    }
+
+                    // เพิ่ม marker ใหม่
+                    userMarker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            className: 'map-user-marker',
+                            html: '<div class="map-user-marker"></div>',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 10]
+                        })
+                    }).addTo(analyticsMap);
+
+                    // เพิ่ม popup
+                    userMarker.bindPopup(`
+                        <div style="text-align: center; font-family: 'Sarabun', sans-serif;">
+                            <h4 style="margin: 0 0 8px 0; color: #3b82f6;">
+                                <i class="fa-solid fa-location-dot"></i> ตำแหน่งของคุณ
+                            </h4>
+                            <p style="margin: 4px 0; font-size: 0.85rem;">
+                                <strong>Latitude:</strong> ${lat.toFixed(6)}<br>
+                                <strong>Longitude:</strong> ${lng.toFixed(6)}<br>
+                                <strong>ความแม่นยำ:</strong> ±${accuracy} เมตร
+                            </p>
+                        </div>
+                    `).openPopup();
+
+                    // เลื่อนแผนที่ไปที่ตำแหน่งผู้ใช้
+                    analyticsMap.setView([lat, lng], 15);
+
+                    // เพิ่มวงกลมแสดงความแม่นยำ
+                    L.circle([lat, lng], {
+                        radius: accuracy,
+                        color: '#3b82f6',
+                        fillColor: '#3b82f6',
+                        fillOpacity: 0.1,
+                        weight: 2
+                    }).addTo(analyticsMap);
+                },
+                function(error) {
+                    console.error('GPS Error:', error);
+                    let errorMsg = 'ไม่สามารถดึงตำแหน่งได้';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'คุณปฏิเสธการเข้าถึงตำแหน่ง';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'ข้อมูลตำแหน่งไม่พร้อมใช้งาน';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'หมดเวลาในการดึงตำแหน่ง';
+                            break;
+                    }
+                    
+                    document.getElementById('gps-coords').innerText = errorMsg;
+                    document.getElementById('gps-accuracy').innerText = '-';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        // เรียกใช้เมื่อหน้าโหลดเสร็จ
+        window.addEventListener('load', function() {
+            initAnalyticsMap();
+        });
+
+        // ========================================
+        // WATER LEVEL LOGIC
+        // ========================================
         async function fetchWaterLevels() {
             try {
                 const res = await fetch('/api/water/level');
