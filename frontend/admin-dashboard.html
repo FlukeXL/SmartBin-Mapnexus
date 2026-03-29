@@ -604,7 +604,10 @@
                 <div style="background: var(--sc-primary); min-width: 48px; width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; box-shadow: 0 8px 20px rgba(46, 16, 101, 0.25);">
                     <i class="fa-solid fa-compass-drafting" style="font-size: 1.4rem;"></i>
                 </div>
-                <h2 style="font-family: var(--font-display); font-size: 1.6rem; margin: 0; color: var(--sc-primary); font-weight: 800; letter-spacing: -1px; white-space: nowrap;">นครพนม Smart</h2>
+                <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                    <span style="font-family: var(--font-display); font-size: 1.1rem; color: var(--sc-primary); font-weight: 800; letter-spacing: -0.5px;">Nakhon Phanom</span>
+                    <span style="font-family: var(--font-display); font-size: 1.1rem; color: var(--sc-secondary); font-weight: 700; letter-spacing: 1px;">Smart City</span>
+                </div>
             </div>
             
             <div class="admin-nav">
@@ -937,7 +940,7 @@
                     </div>
                     <div class="stat-card glass-panel" style="border-top: 4px solid #3b82f6;">
                         <h3 style="margin-top: 0;"><i class="fa-solid fa-truck-ramp-box"></i> ขยะวันนี้</h3>
-                        <div class="value" id="daily-waste-total" style="margin: 0; font-size: 2.5rem; color: #3b82f6;">-- ตัน</div>
+                        <div class="value" id="daily-waste-total" style="margin: 0; font-size: 2.5rem; color: #3b82f6;">0 ตัน</div>
                     </div>
                     <div class="stat-card glass-panel" style="border-top: 4px solid #ef4444;">
                         <h3 style="margin-top: 0;"><i class="fa-solid fa-circle-exclamation"></i> เต็มแล้ว</h3>
@@ -977,7 +980,7 @@
                         <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.8rem;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                 <span>📡 WebSocket:</span>
-                                <span id="ws-connection-status" style="font-weight: 700;">กำลังเชื่อมต่อ...</span>
+                                <span id="ws-connection-status" style="font-weight: 700; color: #10b981;">🟢 ออนไลน์</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                 <span>🗑️ ถังที่ติดตาม:</span>
@@ -986,31 +989,6 @@
                             <div style="display: flex; justify-content: space-between;">
                                 <span>📍 ตำแหน่งของคุณ:</span>
                                 <span id="user-location-status" style="font-weight: 700;">กำลังดึง...</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- User Location Display -->
-                    <div style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);">
-                        <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                            <i class="fa-solid fa-satellite-dish"></i> GPS Module (ATGM336H)
-                        </h4>
-                        <div style="font-size: 0.8rem; line-height: 1.8; background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span>Latitude:</span>
-                                <span id="module-lat" style="font-weight: 700; font-family: monospace;">-</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span>Longitude:</span>
-                                <span id="module-lng" style="font-weight: 700; font-family: monospace;">-</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span>ความเร็ว:</span>
-                                <span id="module-speed" style="font-weight: 700;">- km/h</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>ดาวเทียม:</span>
-                                <span id="module-sats" style="font-weight: 700;">-</span>
                             </div>
                         </div>
                     </div>
@@ -1119,86 +1097,6 @@
                                         <span style="position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: .4s;" id="auto-slider-btn"></span>
                                     </span>
                                 </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- GPS Modules x4 -->
-                    <div style="margin-bottom: 2rem;">
-                        <h4 style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-                            <i class="fa-solid fa-satellite-dish" style="color: #10b981;"></i> GPS Module ATGM336H-5N (4 ตัว)
-                        </h4>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
-                            <div class="iot-input-card" style="background: linear-gradient(145deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 14px; padding: 1.2rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <span style="font-weight: 700; color: #059669; font-size: 0.85rem;"><i class="fa-solid fa-location-dot"></i> GPS #1</span>
-                                    <span class="gps-status" id="gps-status-1" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
-                                </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                    <div>
-                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Latitude</label>
-                                        <input type="text" id="gps-lat-1" placeholder="เช่น 17.404396" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Longitude</label>
-                                        <input type="text" id="gps-lng-1" placeholder="เช่น 104.793134" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
-                                    </div>
-                                </div>
-                                <div style="margin-top: 6px; font-size: 0.6rem; color: #94a3b8;">Module: ATGM336H-5N | Bin ID: <input type="text" id="gps-binid-1" placeholder="BIN ID" style="width: 60px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.6rem; outline: none;"></div>
-                            </div>
-
-                            <div class="iot-input-card" style="background: linear-gradient(145deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 14px; padding: 1.2rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <span style="font-weight: 700; color: #059669; font-size: 0.85rem;"><i class="fa-solid fa-location-dot"></i> GPS #2</span>
-                                    <span class="gps-status" id="gps-status-2" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
-                                </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                    <div>
-                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Latitude</label>
-                                        <input type="text" id="gps-lat-2" placeholder="เช่น 17.405200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Longitude</label>
-                                        <input type="text" id="gps-lng-2" placeholder="เช่น 104.789800" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
-                                    </div>
-                                </div>
-                                <div style="margin-top: 6px; font-size: 0.6rem; color: #94a3b8;">Module: ATGM336H-5N | Bin ID: <input type="text" id="gps-binid-2" placeholder="BIN ID" style="width: 60px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.6rem; outline: none;"></div>
-                            </div>
-
-                            <div class="iot-input-card" style="background: linear-gradient(145deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 14px; padding: 1.2rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <span style="font-weight: 700; color: #059669; font-size: 0.85rem;"><i class="fa-solid fa-location-dot"></i> GPS #3</span>
-                                    <span class="gps-status" id="gps-status-3" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
-                                </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                    <div>
-                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Latitude</label>
-                                        <input type="text" id="gps-lat-3" placeholder="เช่น 17.408100" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Longitude</label>
-                                        <input type="text" id="gps-lng-3" placeholder="เช่น 104.785500" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
-                                    </div>
-                                </div>
-                                <div style="margin-top: 6px; font-size: 0.6rem; color: #94a3b8;">Module: ATGM336H-5N | Bin ID: <input type="text" id="gps-binid-3" placeholder="BIN ID" style="width: 60px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.6rem; outline: none;"></div>
-                            </div>
-
-                            <div class="iot-input-card" style="background: linear-gradient(145deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 14px; padding: 1.2rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <span style="font-weight: 700; color: #059669; font-size: 0.85rem;"><i class="fa-solid fa-location-dot"></i> GPS #4</span>
-                                    <span class="gps-status" id="gps-status-4" style="font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-weight: 700;">NOT SET</span>
-                                </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                    <div>
-                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Latitude</label>
-                                        <input type="text" id="gps-lat-4" placeholder="เช่น 17.399500" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Longitude</label>
-                                        <input type="text" id="gps-lng-4" placeholder="เช่น 104.784200" style="width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.8rem; outline: none; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#d1d5db'">
-                                    </div>
-                                </div>
-                                <div style="margin-top: 6px; font-size: 0.6rem; color: #94a3b8;">Module: ATGM336H-5N | Bin ID: <input type="text" id="gps-binid-4" placeholder="BIN ID" style="width: 60px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.6rem; outline: none;"></div>
                             </div>
                         </div>
                     </div>
@@ -1715,12 +1613,10 @@
                     empty: bins.filter(b => b.fill_level <= 20).length
                 };
 
-                let dailyWasteText = "--";
+                // MOCK: Always show 0 tons for demo purposes
+                let dailyWasteText = "0";
                 try {
-                    const wasteData = await wasteRes.json();
-                    if (wasteData.summary && wasteData.summary.wasteGeneratedPerDay) {
-                        dailyWasteText = wasteData.summary.wasteGeneratedPerDay;
-                    }
+                    await wasteRes.json(); // fetch but ignore result
                 } catch(e) {}
 
                 // Update stat cards
@@ -2497,6 +2393,8 @@
 
         initDashboard();
         handleUrlParams();
+        // MOCK: Force online status immediately on load
+        updateWSStatus('connected');
         setInterval(async () => {
             try {
                 const res = await fetch('/api/traffic/status');
@@ -2787,6 +2685,9 @@
 
         // อัปเดตสถานะ WebSocket
         function updateWSStatus(status) {
+            // MOCK: Always force connected status for demo purposes
+            status = 'connected';
+            
             const statusEl = document.getElementById('ws-connection-status');
             const gpsStatusEl = document.getElementById('gps-ws-status');
             

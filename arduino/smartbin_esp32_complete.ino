@@ -17,11 +17,11 @@
 #include <ESP32Servo.h>
 
 // ===== WiFi Configuration =====
-const char* ssid = "YOUR_WIFI_NAME";        // เปลี่ยนเป็นชื่อ WiFi ของคุณ
-const char* password = "YOUR_WIFI_PASSWORD"; // เปลี่ยนเป็นรหัส WiFi ของคุณ
+const char* ssid = "Office-5G";        // เปลี่ยนเป็นชื่อ WiFi ของคุณ
+const char* password = "123467890"; // เปลี่ยนเป็นรหัส WiFi ของคุณ
 
 // ===== Server Configuration =====
-const char* serverUrl = "http://192.168.1.100:3000/api/smartbin/1"; // เปลี่ยน IP เป็นของคุณ
+const char* serverUrl = "http://192.168.0.107:3000/api/smartbin/1"; // เปลี่ยน IP เป็นของคุณ
 
 // ===== Bin Configuration =====
 const int BIN_ID = 1;
@@ -69,6 +69,16 @@ int wasteCount[4] = {0, 0, 0, 0}; // plastic, metal, glass, paper
 
 bool wifiConnected = false;
 
+// ===== Alert System =====
+bool alertSent70 = false;  // แจ้งเตือน 70% แล้วหรือยัง
+bool alertSent90 = false;  // แจ้งเตือน 90% แล้วหรือยัง
+
+// ===== การแจ้งเตือน =====
+const int ALERT_LEVEL_WARNING = 70;  // แจ้งเตือนที่ 70%
+const int ALERT_LEVEL_FULL = 90;     // แจ้งเตือนเต็มที่ 90%
+bool alertSent70 = false;  // ป้องกันส่งซ้ำ
+bool alertSent90 = false;  // ป้องกันส่งซ้ำ
+
 void setup() {
   Serial.begin(115200);
   GPS_Serial.begin(9600, SERIAL_8N1, 16, 17);
@@ -102,16 +112,6 @@ void setup() {
 void loop() {
   // 1. อ่านข้อมูล GPS
   while (GPS_Serial.available() > 0) {
-    gps.encode(GPS_Serial.read());
-  }
-  
-  // 2. รับคำสั่งจาก Jetson Nano
-  if (Jetson_Serial.available() > 0) {
-    String command = Jetson_Serial.readStringUntil('\n');
-    command.trim();
-    handleJetsonCommand(command);
-  }
-  
   // 3. ส่งข้อมูล GPS แบบ Real-time
   if (gps.location.isUpdated()) {
     currentLat = gps.location.lat();
@@ -125,18 +125,25 @@ void loop() {
       // อ่านระดับขยะจาก Ultrasonic
       currentFillLevel = readFillLevel();
       
+      // ตรวจสอบและส่งแจ้งเตือน
+      checkAndSendAlert();
+      
       // แสดงข้อมูล GPS และระดับขยะ
       printGPSData();
       
       // ส่งข้อมูลไปยัง Server
       sendDataToServer();
     }
-  }
-  
-  // 4. ตรวจสอบสถานะ GPS
-  if (millis() > 5000 && gps.charsProcessed() < 10) {
-    Serial.println("⚠️ ไม่พบสัญญาณ GPS - ตรวจสอบการต่อสาย");
-    delay(2000);
+  }   
+      // อ่านระดับขยะจาก Ultrasonic
+      currentFillLevel = readFillLevel();
+      
+      // แสดงข้อมูล GPS และระดับขยะ
+      printGPSData();
+      
+      // ส่งข้อมูลไปยัง Server
+      sendDataToServer();
+    }
   }
   
   // 5. แสดงจำนวนดาวเทียมและระดับขยะ
@@ -148,11 +155,22 @@ void loop() {
       Serial.print(gps.satellites.value());
       Serial.print(" ดวง | ");
     }
+    int fillLevel = readFillLevel();
     Serial.print("🗑️  ระดับขยะ: ");
-    Serial.print(readFillLevel());
+    Serial.print(fillLevel);
     Serial.println("%");
+    
+    // ตรวจสอบและส่งการแจ้งเตือน
+    checkAndSendAlert(fillLevel);
   }
-}
+  }     
+    Serial.print(" ดวง | "); 
+  }
+      Serial.print("🗑️  ระดับขยะ: ");
+      Serial.print(readFillLevel());
+      Serial.println("%");
+    }
+  }
 
 // ===== ฟังก์ชันจัดการคำสั่งจาก Jetson =====
 void handleJetsonCommand(String command) {
@@ -199,24 +217,71 @@ void openServo(Servo &servo, String type) {
   
   // เปิดฝา
   servo.write(SERVO_OPEN_ANGLE);
-  delay(SERVO_OPEN_TIME);
-  
-  // ปิดฝา
-  servo.write(SERVO_CLOSE_ANGLE);
-  
-  Serial.println("✅ ปิดฝา: " + type);
-}
-
-// ===== ฟังก์ชันปิดฝาทั้งหมด =====
-void closeAllServos() {
-  servoPlastic.write(SERVO_CLOSE_ANGLE);
-  servoMetal.write(SERVO_CLOSE_ANGLE);
-  servoGlass.write(SERVO_CLOSE_ANGLE);
-  servoPaper.write(SERVO_CLOSE_ANGLE);
-  Serial.println("🔒 ปิดฝาทั้งหมด");
-}
-
 // ===== ฟังก์ชันอ่านระดับขยะ =====
+int readFillLevel() {
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  
+  long duration = pulseIn(ECHO_PIN, HIGH);
+  int distance = duration * 0.034 / 2;
+  
+  int fillLevel = 100 - ((distance * 100) / BIN_HEIGHT);
+  
+  if (fillLevel < 0) fillLevel = 0;
+  if (fillLevel > 100) fillLevel = 100;
+  
+  return fillLevel;
+}
+
+// ===== ฟังก์ชันตรวจสอบและส่งแจ้งเตือน =====
+void checkAndSendAlert() {
+  // แจ้งเตือนที่ 90% (เต็มเกือบเต็ม - ต้องเก็บด่วน)
+  if (currentFillLevel >= 90 && !alertSent90) {
+    Serial.println("\n╔═══════════════════════════════════════════╗");
+    Serial.println("║  🚨 แจ้งเตือน: ถังขยะเต็ม 90%!           ║");
+    Serial.println("║     ⚠️  ต้องเก็บขยะด่วน!                 ║");
+    Serial.println("╚═══════════════════════════════════════════╝\n");
+    
+    alertSent90 = true;
+    alertSent70 = true; // ถ้าถึง 90% แล้ว ถือว่าผ่าน 70% มาแล้ว
+    
+    // ส่งแจ้งเตือนไปยัง Server (สามารถเพิ่ม API endpoint สำหรับแจ้งเตือนได้)
+    sendAlertToServer(90);
+  }
+  // แจ้งเตือนที่ 70% (เตรียมเก็บขยะ)
+  else if (currentFillLevel >= 70 && !alertSent70) {
+    Serial.println("\n╔═══════════════════════════════════════════╗");
+    Serial.println("║  ⚠️  แจ้งเตือน: ถังขยะเต็ม 70%           ║");
+    Serial.println("║     📋 เตรียมเก็บขยะ                      ║");
+    Serial.println("╚═══════════════════════════════════════════╝\n");
+    
+    alertSent70 = true;
+    
+    // ส่งแจ้งเตือนไปยัง Server
+    sendAlertToServer(70);
+  }
+  
+  // รีเซ็ต flag เมื่อระดับขยะลดลงต่ำกว่า 70%
+  if (currentFillLevel < 70) {
+    alertSent70 = false;
+    alertSent90 = false;
+  }
+}
+
+// ===== ฟังก์ชันส่งแจ้งเตือนไปยัง Server =====
+void sendAlertToServer(int alertLevel) {
+  Serial.println("📤 ส่งการแจ้งเตือนไปยัง Server...");
+  Serial.print("   ระดับแจ้งเตือน: ");
+  Serial.print(alertLevel);
+  Serial.println("%");
+  
+  // คุณสามารถเพิ่ม API endpoint สำหรับแจ้งเตือนได้
+  // เช่น POST /api/smartbin/alert
+  // ตอนนี้จะแสดงใน Serial Monitor เท่านั้น
+}/ ===== ฟังก์ชันอ่านระดับขยะ =====
 int readFillLevel() {
   digitalWrite(TRIG_PIN, LOW);
   delayMicroseconds(2);
@@ -238,15 +303,20 @@ int readFillLevel() {
 // ===== ฟังก์ชันเชื่อมต่อ WiFi =====
 void connectWiFi() {
   Serial.print("🔌 เชื่อมต่อ WiFi: ");
-  Serial.println(ssid);
+  // สร้าง JSON สำหรับ PUT request
+  String status = "active";
+  if (currentFillLevel >= 90) {
+    status = "full";  // เปลี่ยนสถานะเป็น full เมื่อเต็ม 90%
+  }
   
-  WiFi.begin(ssid, password);
-  
-  int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
-    delay(500);
-    Serial.print(".");
-    attempts++;
+  String jsonData = "{";
+  jsonData += "\"latitude\":" + String(currentLat, 8) + ",";
+  jsonData += "\"longitude\":" + String(currentLng, 8) + ",";
+  jsonData += "\"fill_level\":" + String(currentFillLevel) + ",";
+  jsonData += "\"status\":\"" + status + "\",";
+  jsonData += "\"temperature\":32.5,";
+  jsonData += "\"battery_level\":95";
+  jsonData += "}";
   }
   
   if (WiFi.status() == WL_CONNECTED) {
@@ -264,7 +334,7 @@ void connectWiFi() {
 // ===== ฟังก์ชันแสดงข้อมูล GPS =====
 void printGPSData() {
   Serial.println("╔════════════════════════════════════════╗");
-  Serial.println("║         📍 ข้อมูลระบบ                  ║");
+  Serial.println("║         📍  ข้อมูลระบบ                  ║");
   Serial.println("╠════════════════════════════════════════╣");
   
   Serial.print("║ Latitude:  ");
@@ -280,16 +350,6 @@ void printGPSData() {
   Serial.println(" ดวง                      ║");
   
   Serial.print("║ ระดับขยะ: ");
-  Serial.print(currentFillLevel);
-  Serial.println("%                       ║");
-  
-  Serial.print("║ ความเร็ว:  ");
-  Serial.print(gps.speed.kmph(), 1);
-  Serial.println(" km/h                 ║");
-  
-  Serial.println("╚════════════════════════════════════════╝\n");
-}
-
 // ===== ฟังก์ชันส่งข้อมูลไปยัง Server =====
 void sendDataToServer() {
   if (WiFi.status() != WL_CONNECTED) {
@@ -302,12 +362,18 @@ void sendDataToServer() {
   http.begin(serverUrl);
   http.addHeader("Content-Type", "application/json");
   
+  // กำหนดสถานะตามระดับขยะ
+  String status = "active";
+  if (currentFillLevel >= 90) {
+    status = "full";
+  }
+  
   // สร้าง JSON สำหรับ PUT request
   String jsonData = "{";
   jsonData += "\"latitude\":" + String(currentLat, 8) + ",";
   jsonData += "\"longitude\":" + String(currentLng, 8) + ",";
   jsonData += "\"fill_level\":" + String(currentFillLevel) + ",";
-  jsonData += "\"status\":\"active\",";
+  jsonData += "\"status\":\"" + status + "\",";
   jsonData += "\"temperature\":32.5,";
   jsonData += "\"battery_level\":95";
   jsonData += "}";
@@ -326,6 +392,48 @@ void sendDataToServer() {
       Serial.println("📥 Response: " + response);
     }
   } else {
+    Serial.print("❌ ส่งไม่สำเร็จ! Error Code: ");
+    Serial.println(httpResponseCode);
+    Serial.println("   ตรวจสอบ:");
+    Serial.println("   - Server รันอยู่หรือไม่");
+    Serial.println("   - IP Address ถูกต้องหรือไม่");
+  }
+  
+  http.end();
+  Serial.println("─────────────────────────────────────────\n");
+}
+
+// ===== ฟังก์ชันตรวจสอบและส่งการแจ้งเตือน =====
+void checkAndSendAlert(int fillLevel) {
+  // แจ้งเตือนที่ 70% (ใกล้เต็ม)
+  if (fillLevel >= ALERT_LEVEL_WARNING && fillLevel < ALERT_LEVEL_FULL && !alertSent70) {
+    Serial.println("\n⚠️ ========================================");
+    Serial.println("⚠️  แจ้งเตือน: ถังขยะใกล้เต็ม!");
+    Serial.println("⚠️  ระดับขยะ: " + String(fillLevel) + "%");
+    Serial.println("⚠️  กรุณาเตรียมเก็บขยะ");
+    Serial.println("⚠️ ========================================\n");
+    
+    alertSent70 = true;
+    alertSent90 = false; // รีเซ็ต flag 90%
+  }
+  
+  // แจ้งเตือนที่ 90% (เต็มแล้ว)
+  else if (fillLevel >= ALERT_LEVEL_FULL && !alertSent90) {
+    Serial.println("\n🚨 ========================================");
+    Serial.println("🚨  แจ้งเตือนด่วน: ถังขยะเต็มแล้ว!");
+    Serial.println("🚨  ระดับขยะ: " + String(fillLevel) + "%");
+    Serial.println("🚨  ต้องเก็บขยะทันที!");
+    Serial.println("🚨 ========================================\n");
+    
+    alertSent90 = true;
+  }
+  
+  // รีเซ็ต flag เมื่อระดับขยะลดลง
+  if (fillLevel < ALERT_LEVEL_WARNING) {
+    alertSent70 = false;
+    alertSent90 = false;
+  }
+} } else {
     Serial.print("❌ ส่งไม่สำเร็จ! Error Code: ");
     Serial.println(httpResponseCode);
     Serial.println("   ตรวจสอบ:");

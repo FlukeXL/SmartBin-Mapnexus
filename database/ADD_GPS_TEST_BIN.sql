@@ -7,10 +7,9 @@ USE nakhonphanom_smartbin;
 DELETE FROM smart_bins WHERE id = 1;
 
 -- เพิ่มถังขยะ ID=1 สำหรับทดสอบ GPS
-INSERT INTO `smart_bins` 
-(`id`, `name`, `location_name`, `lat`, `lng`, `bin_type`, `capacity`, `fill_level`, `status`, `temperature`, `battery_level`) 
-VALUES
-(1, 'ถังขยะทดสอบ GPS', 'ตำแหน่งทดสอบ', 17.395753084084337, 104.72132436445033, 104.78650000, 'general', 120, 50, 'active', 32.5, 95);
+INSERT INTO `smart_bins` (`id`, `name`, `location_name`, `lat`, `lng`, `bin_type`, `capacity`, `fill_level`, `status`, `temperature`, `battery_level`) VALUES
+(1, 'ถังขยะทดสอบ GPS', 'ตำแหน่งทดสอบ', 17.39575308, 104.72132436, 'general', 120, 3, 'active', 32.5, 95);
+-- หมายเหตุ: เปลี่ยน fill_level (ค่าที่ 9) เป็นเลขใดก็ได้ 0-100
 
 -- ตรวจสอบข้อมูล
 SELECT * FROM smart_bins WHERE id = 1;
